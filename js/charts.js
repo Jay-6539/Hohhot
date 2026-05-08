@@ -28,9 +28,9 @@ function lineSeries(label, data, color) {
     data,
     borderColor: color,
     backgroundColor: GREEN.fill,
-    borderWidth: 1.9,
+    borderWidth: 1.8,
     pointRadius: 1.8,
-    pointHoverRadius: 3.2,
+    pointHoverRadius: 3,
     pointBackgroundColor: color,
     tension: 0.32
   };
@@ -42,7 +42,7 @@ function barSeries(label, data, color) {
     data,
     backgroundColor: color,
     borderRadius: 6,
-    maxBarThickness: 26
+    maxBarThickness: 24
   };
 }
 
@@ -60,15 +60,20 @@ function baseOptions() {
           pointStyle: "circle",
           boxWidth: 8,
           boxHeight: 8,
-          padding: 12,
+          padding: 10,
           font: { size: 11 }
         }
       },
       tooltip: {
+        intersect: false,
         padding: 8,
         titleFont: { size: 11 },
         bodyFont: { size: 11 }
       }
+    },
+    interaction: {
+      mode: "index",
+      intersect: false
     },
     scales: {
       x: {
@@ -78,7 +83,7 @@ function baseOptions() {
       y: {
         beginAtZero: true,
         grid: { color: GREEN.grid, lineWidth: 0.8 },
-        ticks: { font: { size: 10 }, maxTicksLimit: 6 }
+        ticks: { font: { size: 10 }, maxTicksLimit: 5 }
       }
     }
   };
@@ -99,8 +104,8 @@ function dualAxisOptions() {
     ...baseOptions(),
     scales: {
       x: { grid: { display: false } },
-      y: { beginAtZero: true, grid: { color: GREEN.grid, lineWidth: 0.8 }, ticks: { font: { size: 10 }, maxTicksLimit: 6 } },
-      y1: { position: "right", beginAtZero: true, grid: { drawOnChartArea: false }, ticks: { font: { size: 10 }, maxTicksLimit: 6 } }
+      y: { beginAtZero: true, grid: { color: GREEN.grid, lineWidth: 0.8 }, ticks: { font: { size: 10 }, maxTicksLimit: 5 } },
+      y1: { position: "right", beginAtZero: true, grid: { drawOnChartArea: false }, ticks: { font: { size: 10 }, maxTicksLimit: 5 } }
     }
   };
 }
