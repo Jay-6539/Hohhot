@@ -90,7 +90,11 @@
             <a href="https://ditu.amap.com/" target="_blank" rel="noreferrer noopener">https://ditu.amap.com/</a>
           </li>
           <li>
-            OpenStreetMap + Overpass API（道路、POI、绿地专题数据查询）：
+            Supabase（业态 POI 表）：
+            <a href="https://supabase.com/dashboard/project/oebgnmohndeurjwzdtdj" target="_blank" rel="noreferrer noopener">https://supabase.com/dashboard/project/oebgnmohndeurjwzdtdj</a>
+          </li>
+          <li>
+            OpenStreetMap + Overpass API（道路与绿地专题数据查询）：
             <a href="https://overpass-turbo.eu/" target="_blank" rel="noreferrer noopener">https://overpass-turbo.eu/</a>
           </li>
           <li>
@@ -101,8 +105,9 @@
             行政边界备选 GeoJSON（公开区划边界）：
             <a href="https://geojson.hxkj.vip/" target="_blank" rel="noreferrer noopener">https://geojson.hxkj.vip/</a>
           </li>
-          <li>更新时间与说明：地图页采用“实时查询优先，查询失败回退本地示例”的策略，并在图例注明。</li>
+          <li>更新时间与说明：地图页采用“Supabase 业态实时拉取优先，查询失败回退本地示例”的策略，并在图例注明。</li>
           <li>坐标说明：因高德底图采用 GCJ-02 坐标，叠加专题图层在前端完成 WGS84→GCJ-02 对齐转换。</li>
+          <li>字段口径：Supabase `huhhot` 表使用 `x/y`（WGS84）与“大类”字段驱动业态网格评分。</li>
         </ul>
       </section>
     </main>

@@ -15,6 +15,12 @@
     showMapError("地图核心库加载失败，请检查网络后刷新页面。");
     return;
   }
+  const sbCfg = cfg.supabase || {};
+  const hasSupabaseLib = window.supabase && typeof window.supabase.createClient === "function";
+  const supabaseClient =
+    hasSupabaseLib && sbCfg.url && sbCfg.anonKey
+      ? window.supabase.createClient(sbCfg.url, sbCfg.anonKey)
+      : null;
 
   function outOfChina(lon, lat) {
     return lon < 72.004 || lon > 137.8347 || lat < 0.8293 || lat > 55.8271;
@@ -122,6 +128,16 @@
     return "service";
   }
 
+  function classifyBigCategory(value) {
+    const text = String(value || "").trim().toLowerCase();
+    if (!text) return "service";
+    if (/商业|零售|购物|餐饮|消费|商超|market|retail|shop|food/.test(text)) return "retail";
+    if (/办公|写字楼|园区|商务|office|enterprise|company/.test(text)) return "office";
+    if (/公共|政务|教育|学校|医院|医疗|地铁|公交|交通|文化|体育|tourism|public/.test(text)) return "public";
+    if (/生活|服务|酒店|住宿|家政|维修|service/.test(text)) return "service";
+    return "service";
+  }
+
   async function fetchOverpass(query) {
     const body = query.trim();
     for (const endpoint of cfg.overpassEndpoints) {
@@ -139,6 +155,52 @@
       }
     }
     return null;
+  }
+
+  async function fetchSupabasePoi() {
+    if (!supabaseClient) {
+      // eslint-disable-next-line no-console
+      console.warn("Supabase client unavailable, fallback to local POI.");
+      return { type: "FeatureCollection", features: [] };
+    }
+
+    const xField = (sbCfg.columns && sbCfg.columns.x) || "x";
+    const yField = (sbCfg.columns && sbCfg.columns.y) || "y";
+    const categoryField = (sbCfg.columns && sbCfg.columns.bigCategory) || "大类";
+    const pageSize = sbCfg.pageSize || 1000;
+    const maxRows = sbCfg.maxRows || 50000;
+    const selectFields = `${xField},${yField},${categoryField}`;
+
+    const features = [];
+    for (let from = 0; from < maxRows; from += pageSize) {
+      const to = from + pageSize - 1;
+      const { data, error } = await supabaseClient.from(sbCfg.table).select(selectFields).range(from, to);
+      if (error) {
+        // eslint-disable-next-line no-console
+        console.warn("Supabase POI query failed:", error.message || error);
+        return { type: "FeatureCollection", features: [] };
+      }
+      if (!data || !data.length) break;
+
+      data.forEach((row) => {
+        const lon = Number(row[xField]);
+        const lat = Number(row[yField]);
+        if (!Number.isFinite(lon) || !Number.isFinite(lat)) return;
+        const rawCategory = row[categoryField];
+        features.push({
+          type: "Feature",
+          properties: {
+            category: classifyBigCategory(rawCategory),
+            bigCategory: rawCategory || "未分类"
+          },
+          geometry: { type: "Point", coordinates: [lon, lat] }
+        });
+      });
+
+      if (data.length < pageSize) break;
+    }
+
+    return { type: "FeatureCollection", features };
   }
 
   function overpassToLineFeatures(overpass) {
@@ -610,16 +672,15 @@
   async function buildAllLayers() {
     const boundaryRaw = await fetchOverpass(cfg.queries.boundary);
     const roadsRaw = await fetchOverpass(cfg.queries.roads);
-    const poiRaw = await fetchOverpass(cfg.queries.poi);
     const greenRaw = await fetchOverpass(cfg.queries.green);
+    const supabasePoiFC = await fetchSupabasePoi();
 
     const boundaryFC = toFeatureCollection(overpassToBoundaryFeatures(boundaryRaw));
     const roadsFC = toFeatureCollection(overpassToLineFeatures(roadsRaw).slice(0, 12000));
-    const poiFC = toFeatureCollection(overpassToPointFeatures(poiRaw).slice(0, 18000));
     const greenFC = toFeatureCollection(overpassToPolygonFeatures(greenRaw).slice(0, 4000));
 
     const safeRoads = roadsFC.features.length ? roadsFC : cfg.fallbackRoads;
-    const safePoi = poiFC.features.length ? poiFC : cfg.fallbackPoi;
+    const safePoi = supabasePoiFC.features.length ? supabasePoiFC : cfg.fallbackPoi;
     const safeGreen = greenFC.features.length ? greenFC : cfg.fallbackGreen;
     const safeBoundary = boundaryFC.features.length ? boundaryFC : cfg.fallbackBoundary;
     const compactGreenFeatures = filterLargePolygons(safeGreen.features, 0.8);

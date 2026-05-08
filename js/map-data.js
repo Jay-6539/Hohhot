@@ -47,6 +47,18 @@ window.HohhotMapData = {
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter"
   ],
+  supabase: {
+    url: "https://oebgnmohndeurjwzdtdj.supabase.co",
+    anonKey: "sb_publishable_8ws18EcSbSjc1q4ZIQ2NeA_cDRqPM93",
+    table: "huhhot",
+    columns: {
+      x: "x",
+      y: "y",
+      bigCategory: "大类"
+    },
+    pageSize: 1000,
+    maxRows: 50000
+  },
   layerIds: {
     traffic: ["traffic-lines"],
     business: ["business-grid-cells", "business-grid-outline"],
