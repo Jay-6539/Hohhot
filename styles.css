@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
-
 :root {
   --bg: #f1f2f6;
   --surface: #ffffff;
@@ -20,7 +18,7 @@
 
 body {
   margin: 0;
-  font-family: "Inter", "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+  font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", "Segoe UI", sans-serif;
   color: var(--text);
   background: var(--bg);
   line-height: 1.6;
@@ -202,7 +200,8 @@ ol {
 }
 
 .chart-canvas-wrap {
-  height: 250px;
+  min-height: 220px;
+  aspect-ratio: 16 / 9;
   width: 100%;
   border-radius: 12px;
   background: linear-gradient(180deg, #f9fafc 0%, #f6f8fb 100%);
@@ -212,7 +211,7 @@ ol {
 
 .chart-canvas-wrap canvas {
   width: 100% !important;
-  height: 234px !important;
+  height: 100% !important;
   display: block;
 }
 
@@ -287,10 +286,10 @@ a {
   }
 
   .chart-canvas-wrap {
-    height: 220px;
+    min-height: 180px;
   }
 
   .chart-canvas-wrap canvas {
-    height: 204px !important;
+    height: 100% !important;
   }
 }
