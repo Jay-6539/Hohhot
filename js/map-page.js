@@ -200,6 +200,8 @@
       if (data.length < pageSize) break;
     }
 
+    // eslint-disable-next-line no-console
+    console.info(`Supabase POI loaded: ${features.length}`);
     return { type: "FeatureCollection", features };
   }
 
@@ -736,7 +738,10 @@
     const greenFC = toFeatureCollection(overpassToPolygonFeatures(greenRaw).slice(0, 4000));
 
     const safeRoads = roadsFC.features.length ? roadsFC : cfg.fallbackRoads;
-    const safePoi = supabasePoiFC.features.length ? supabasePoiFC : cfg.fallbackPoi;
+    const useSupabasePoi = supabasePoiFC.features.length > 0;
+    const safePoi = useSupabasePoi ? supabasePoiFC : cfg.fallbackPoi;
+    // eslint-disable-next-line no-console
+    console.info(`Business POI source: ${useSupabasePoi ? "supabase" : "fallback"}, count=${safePoi.features.length}`);
     const safeGreen = greenFC.features.length ? greenFC : cfg.fallbackGreen;
     const safeBoundary = boundaryFC.features.length ? boundaryFC : cfg.fallbackBoundary;
     const compactGreenFeatures = filterLargePolygons(safeGreen.features, 0.8);

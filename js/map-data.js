@@ -50,7 +50,7 @@ window.HohhotMapData = {
   supabase: {
     url: "https://oebgnmohndeurjwzdtdj.supabase.co",
     anonKey: "sb_publishable_8ws18EcSbSjc1q4ZIQ2NeA_cDRqPM93",
-    table: "huhhot",
+    table: "Huhhot POI data",
     columns: {
       x: "x",
       y: "y",
