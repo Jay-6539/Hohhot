@@ -12,7 +12,7 @@ const GREEN = {
 
 if (window.Chart) {
   Chart.defaults.font.family = '"Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif';
-  Chart.defaults.font.size = 12;
+  Chart.defaults.font.size = 11;
   Chart.defaults.color = "#4d5868";
 }
 
@@ -28,9 +28,9 @@ function lineSeries(label, data, color) {
     data,
     borderColor: color,
     backgroundColor: GREEN.fill,
-    borderWidth: 2.2,
-    pointRadius: 2.5,
-    pointHoverRadius: 4,
+    borderWidth: 1.9,
+    pointRadius: 1.8,
+    pointHoverRadius: 3.2,
     pointBackgroundColor: color,
     tension: 0.32
   };
@@ -41,8 +41,8 @@ function barSeries(label, data, color) {
     label,
     data,
     backgroundColor: color,
-    borderRadius: 7,
-    maxBarThickness: 32
+    borderRadius: 6,
+    maxBarThickness: 26
   };
 }
 
@@ -50,12 +50,36 @@ function baseOptions() {
   return {
     responsive: true,
     maintainAspectRatio: true,
-    aspectRatio: 2,
+    aspectRatio: 2.15,
     animation: false,
-    plugins: { legend: { position: "bottom" } },
+    plugins: {
+      legend: {
+        position: "bottom",
+        labels: {
+          usePointStyle: true,
+          pointStyle: "circle",
+          boxWidth: 8,
+          boxHeight: 8,
+          padding: 12,
+          font: { size: 11 }
+        }
+      },
+      tooltip: {
+        padding: 8,
+        titleFont: { size: 11 },
+        bodyFont: { size: 11 }
+      }
+    },
     scales: {
-      x: { grid: { display: false } },
-      y: { beginAtZero: true, grid: { color: GREEN.grid } }
+      x: {
+        grid: { display: false },
+        ticks: { font: { size: 10 } }
+      },
+      y: {
+        beginAtZero: true,
+        grid: { color: GREEN.grid, lineWidth: 0.8 },
+        ticks: { font: { size: 10 }, maxTicksLimit: 6 }
+      }
     }
   };
 }
@@ -75,8 +99,8 @@ function dualAxisOptions() {
     ...baseOptions(),
     scales: {
       x: { grid: { display: false } },
-      y: { beginAtZero: true, grid: { color: GREEN.grid } },
-      y1: { position: "right", beginAtZero: true, grid: { drawOnChartArea: false } }
+      y: { beginAtZero: true, grid: { color: GREEN.grid, lineWidth: 0.8 }, ticks: { font: { size: 10 }, maxTicksLimit: 6 } },
+      y1: { position: "right", beginAtZero: true, grid: { drawOnChartArea: false }, ticks: { font: { size: 10 }, maxTicksLimit: 6 } }
     }
   };
 }
@@ -108,7 +132,7 @@ function renderPopulationCharts() {
   chartOf("ageStructureChart", {
     type: "doughnut",
     data: { labels: ["0-14岁", "15-59岁", "60岁及以上"], datasets: [{ data: [13.91, 68.06, 18.03], backgroundColor: [GREEN.g500, GREEN.g700, GREEN.g900], borderWidth: 0 }] },
-    options: { ...baseOptions(), aspectRatio: 1.7, scales: undefined }
+    options: { ...baseOptions(), aspectRatio: 1.72, scales: undefined, cutout: "58%" }
   });
   chartOf("urbanRateChart", { type: "line", data: { labels: d.years, datasets: [lineSeries("城镇化率(%)", d.urbanRate, GREEN.g700)] }, options: baseOptions() });
   chartOf("netFlowChart", { type: "bar", data: { labels: d.years, datasets: [barSeries("净流入(万人)", d.netFlow, GREEN.g600)] }, options: baseOptions() });
@@ -121,7 +145,7 @@ function renderEconomyCharts() {
   chartOf("industryStructureChart", {
     type: "pie",
     data: { labels: ["第一产业", "第二产业", "第三产业"], datasets: [{ data: d.industryStructure, backgroundColor: [GREEN.g400, GREEN.g600, GREEN.g900], borderWidth: 0 }] },
-    options: { ...baseOptions(), aspectRatio: 1.7, scales: undefined }
+    options: { ...baseOptions(), aspectRatio: 1.72, scales: undefined }
   });
   chartOf("incomeChart", {
     type: "line",
@@ -148,7 +172,12 @@ function renderIndustryCharts() {
       labels: d.industryChainScore.labels,
       datasets: [{ label: "完整度得分", data: d.industryChainScore.values, borderColor: GREEN.g900, backgroundColor: GREEN.fill, pointBackgroundColor: GREEN.g900, borderWidth: 2 }]
     },
-    options: { ...baseOptions(), aspectRatio: 1.8, scales: undefined }
+    options: {
+      ...baseOptions(),
+      aspectRatio: 1.84,
+      scales: undefined,
+      elements: { line: { borderWidth: 2 }, point: { radius: 2 } }
+    }
   });
 }
 
