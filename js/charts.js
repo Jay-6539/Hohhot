@@ -22,7 +22,7 @@ function chartOf(id, config) {
   return new Chart(el, config);
 }
 
-function lineSeries(label, data, color) {
+function lineSeries(label, data, color, custom = {}) {
   return {
     label,
     data,
@@ -32,7 +32,8 @@ function lineSeries(label, data, color) {
     pointRadius: 1.8,
     pointHoverRadius: 3,
     pointBackgroundColor: color,
-    tension: 0.32
+    tension: 0.32,
+    ...custom
   };
 }
 
@@ -135,31 +136,62 @@ function renderPopulationCharts() {
   const d = window.HohhotData;
   chartOf("popTrendChart", { type: "line", data: { labels: d.years, datasets: [lineSeries("常住人口(万人)", d.population, GREEN.g900)] }, options: baseOptions() });
   chartOf("ageStructureChart", {
-    type: "doughnut",
-    data: { labels: ["0-14岁", "15-59岁", "60岁及以上"], datasets: [{ data: [13.91, 68.06, 18.03], backgroundColor: [GREEN.g500, GREEN.g700, GREEN.g900], borderWidth: 0 }] },
-    options: { ...baseOptions(), aspectRatio: 1.72, scales: undefined, cutout: "58%" }
+    type: "bar",
+    data: {
+      labels: ["0-14岁", "15-59岁", "60岁及以上"],
+      datasets: [
+        barSeries("呼和浩特", d.ageStructureLocal, GREEN.g800),
+        barSeries("全国平均", d.ageStructureNational, GREEN.g400)
+      ]
+    },
+    options: percentOptions()
   });
-  chartOf("urbanRateChart", { type: "line", data: { labels: d.years, datasets: [lineSeries("城镇化率(%)", d.urbanRate, GREEN.g700)] }, options: baseOptions() });
+  chartOf("urbanRateChart", {
+    type: "line",
+    data: {
+      labels: d.years,
+      datasets: [
+        lineSeries("呼和浩特", d.urbanRate, GREEN.g800),
+        lineSeries("全国平均", d.nationalUrbanRate, GREEN.g400, { borderDash: [6, 4], pointRadius: 1.3 })
+      ]
+    },
+    options: percentOptions()
+  });
   chartOf("netFlowChart", { type: "bar", data: { labels: d.years, datasets: [barSeries("净流入(万人)", d.netFlow, GREEN.g600)] }, options: baseOptions() });
 }
 
 function renderEconomyCharts() {
   const d = window.HohhotData;
   chartOf("gdpChart", { type: "bar", data: { labels: d.years, datasets: [barSeries("GDP(亿元)", d.gdp, GREEN.g700)] }, options: baseOptions() });
-  chartOf("gdpGrowthChart", { type: "line", data: { labels: d.years, datasets: [lineSeries("GDP增速(%)", d.gdpGrowth, GREEN.g900)] }, options: baseOptions() });
+  chartOf("gdpGrowthChart", {
+    type: "line",
+    data: {
+      labels: d.years,
+      datasets: [
+        lineSeries("呼和浩特", d.gdpGrowth, GREEN.g900),
+        lineSeries("全国平均", d.nationalGdpGrowth, GREEN.g400, { borderDash: [6, 4], pointRadius: 1.3 })
+      ]
+    },
+    options: baseOptions()
+  });
   chartOf("industryStructureChart", {
-    type: "pie",
-    data: { labels: ["第一产业", "第二产业", "第三产业"], datasets: [{ data: d.industryStructure, backgroundColor: [GREEN.g400, GREEN.g600, GREEN.g900], borderWidth: 0 }] },
-    options: { ...baseOptions(), aspectRatio: 1.72, scales: undefined }
+    type: "bar",
+    data: {
+      labels: ["第一产业", "第二产业", "第三产业"],
+      datasets: [
+        barSeries("呼和浩特", d.industryStructure, GREEN.g800),
+        barSeries("全国平均", d.nationalIndustryStructure, GREEN.g400)
+      ]
+    },
+    options: percentOptions()
   });
   chartOf("incomeChart", {
     type: "line",
     data: {
       labels: d.years,
       datasets: [
-        lineSeries("全体居民", d.incomes.all, GREEN.g900),
-        lineSeries("城镇居民", d.incomes.urban, GREEN.g700),
-        lineSeries("农村居民", d.incomes.rural, GREEN.g500)
+        lineSeries("呼和浩特", d.incomes.all, GREEN.g900),
+        lineSeries("全国平均", d.nationalIncomesAll, GREEN.g400, { borderDash: [6, 4], pointRadius: 1.3 })
       ]
     },
     options: baseOptions()
@@ -170,12 +202,25 @@ function renderIndustryCharts() {
   const d = window.HohhotData;
   chartOf("keyIndustryScaleChart", { type: "bar", data: { labels: d.keyIndustryScale.labels, datasets: [barSeries("产业规模指数", d.keyIndustryScale.values, GREEN.g700)] }, options: baseOptions() });
   chartOf("highTechCountChart", { type: "line", data: { labels: d.highTechCountYears, datasets: [lineSeries("高新技术企业(家)", d.highTechCount, GREEN.g900)] }, options: baseOptions() });
-  chartOf("industryEmploymentChart", { type: "line", data: { labels: d.years, datasets: [lineSeries("就业吸纳占比(%)", d.industryEmploymentShare, GREEN.g600)] }, options: baseOptions() });
+  chartOf("industryEmploymentChart", {
+    type: "line",
+    data: {
+      labels: d.years,
+      datasets: [
+        lineSeries("呼和浩特", d.industryEmploymentShare, GREEN.g600),
+        lineSeries("全国平均", d.nationalIndustryEmploymentShare, GREEN.g400, { borderDash: [6, 4], pointRadius: 1.3 })
+      ]
+    },
+    options: percentOptions()
+  });
   chartOf("industryChainRadarChart", {
     type: "radar",
     data: {
       labels: d.industryChainScore.labels,
-      datasets: [{ label: "完整度得分", data: d.industryChainScore.values, borderColor: GREEN.g900, backgroundColor: GREEN.fill, pointBackgroundColor: GREEN.g900, borderWidth: 2 }]
+      datasets: [
+        { label: "呼和浩特", data: d.industryChainScore.values, borderColor: GREEN.g900, backgroundColor: GREEN.fill, pointBackgroundColor: GREEN.g900, borderWidth: 2 },
+        { label: "全国平均", data: d.nationalIndustryChainScore, borderColor: GREEN.g400, backgroundColor: "rgba(182,242,220,0.16)", pointBackgroundColor: GREEN.g400, borderWidth: 2, borderDash: [6, 4] }
+      ]
     },
     options: {
       ...baseOptions(),
@@ -191,7 +236,17 @@ function renderEducationCharts() {
   chartOf("educationSpendingChart", { type: "bar", data: { labels: d.eduYears, datasets: [barSeries("教育支出(亿元)", d.eduSpending, GREEN.g700)] }, options: baseOptions() });
   chartOf("studentCountChart", { type: "line", data: { labels: d.eduYears, datasets: [lineSeries("在校生(万人)", d.students, GREEN.g900)] }, options: baseOptions() });
   chartOf("teacherCountChart", { type: "line", data: { labels: d.eduYears, datasets: [lineSeries("专任教师(万人)", d.teachers, GREEN.g600)] }, options: baseOptions() });
-  chartOf("talentMatchChart", { type: "bar", data: { labels: d.eduYears, datasets: [barSeries("匹配指数", d.talentMatch, GREEN.g800)] }, options: percentOptions() });
+  chartOf("talentMatchChart", {
+    type: "bar",
+    data: {
+      labels: d.eduYears,
+      datasets: [
+        barSeries("呼和浩特", d.talentMatch, GREEN.g800),
+        barSeries("全国平均", d.nationalTalentMatch, GREEN.g400)
+      ]
+    },
+    options: percentOptions()
+  });
 }
 
 function renderPlanningCharts() {
