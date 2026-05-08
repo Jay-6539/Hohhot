@@ -40,7 +40,7 @@
           <button class="map-toggle-btn" id="btn-business" type="button" data-layer-mode="business">业态布局</button>
           <button class="map-toggle-btn" id="btn-green" type="button" data-layer-mode="green">绿化信息</button>
         </div>
-        <p class="note">提示：底图已灰度化；业态采用网格色阶（红高蓝低）表达综合活跃度，点击网格可查看功能结构。</p>
+        <p class="note">提示：业态支持缩放精细化——低级别看总览网格，高级别显示细网格与 POI 点位细节。</p>
       </section>
 
       <section class="map-layout">
@@ -51,7 +51,7 @@
           <h2>图例说明</h2>
           <ul class="map-legend-list">
             <li><span class="legend-swatch legend-traffic"></span>交通路网（按道路等级）</li>
-            <li><span class="legend-swatch legend-business-gradient"></span>业态活跃度网格（红=高，蓝=低）</li>
+            <li><span class="legend-swatch legend-business-gradient"></span>业态活跃度网格（可随缩放细化）</li>
             <li><span class="legend-swatch legend-green"></span>绿化范围与密度（公园/林地/草地）</li>
             <li><span class="legend-swatch legend-project-site"></span>项目位置：民族时代广场</li>
           </ul>
@@ -69,7 +69,7 @@
     <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
     <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="./js/map-data.js?v=20260508-map-v6"></script>
-    <script src="./js/map-page.js?v=20260508-map-v6"></script>
+    <script src="./js/map-data.js?v=20260508-map-v7"></script>
+    <script src="./js/map-page.js?v=20260508-map-v7"></script>
   </body>
 </html>

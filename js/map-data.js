@@ -61,7 +61,13 @@ window.HohhotMapData = {
   },
   layerIds: {
     traffic: ["traffic-lines"],
-    business: ["business-grid-cells", "business-grid-outline"],
+    business: [
+      "business-grid-cells-coarse",
+      "business-grid-outline-coarse",
+      "business-grid-cells-fine",
+      "business-grid-outline-fine",
+      "business-poi-detail"
+    ],
     green: ["green-density-heat", "green-polygons", "green-outline"]
   },
   colors: {

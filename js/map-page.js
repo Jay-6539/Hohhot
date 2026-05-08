@@ -479,49 +479,95 @@
   }
 
   function addBusinessLayers(poiFC) {
-    const businessGrid = buildBusinessGridFromPoi(poiFC, 0.008);
-    map.addSource("business-grid-source", { type: "geojson", data: businessGrid });
+    const businessGridCoarse = buildBusinessGridFromPoi(poiFC, 0.008);
+    const businessGridFine = buildBusinessGridFromPoi(poiFC, 0.003);
+    map.addSource("business-grid-coarse-source", { type: "geojson", data: businessGridCoarse });
+    map.addSource("business-grid-fine-source", { type: "geojson", data: businessGridFine });
+    map.addSource("business-poi-detail-source", { type: "geojson", data: poiFC });
+
+    const businessFillColor = [
+      "interpolate",
+      ["linear"],
+      ["get", "score"],
+      0,
+      cfg.colors.businessLow,
+      0.25,
+      cfg.colors.businessLowMid,
+      0.5,
+      cfg.colors.businessMid,
+      0.75,
+      cfg.colors.businessMidHigh,
+      1,
+      cfg.colors.businessHigh
+    ];
+
     map.addLayer({
-      id: "business-grid-cells",
+      id: "business-grid-cells-coarse",
       type: "fill",
-      source: "business-grid-source",
+      source: "business-grid-coarse-source",
+      maxzoom: 11.8,
       paint: {
-        "fill-color": [
-          "interpolate",
-          ["linear"],
-          ["get", "score"],
-          0,
-          cfg.colors.businessLow,
-          0.25,
-          cfg.colors.businessLowMid,
-          0.5,
-          cfg.colors.businessMid,
-          0.75,
-          cfg.colors.businessMidHigh,
-          1,
-          cfg.colors.businessHigh
-        ],
-        "fill-opacity": 0.82
+        "fill-color": businessFillColor,
+        "fill-opacity": 0.76
       }
     });
     map.addLayer({
-      id: "business-grid-outline",
+      id: "business-grid-outline-coarse",
       type: "line",
-      source: "business-grid-source",
+      source: "business-grid-coarse-source",
+      maxzoom: 11.8,
       paint: {
         "line-color": "rgba(255,255,255,0.24)",
         "line-width": 0.35,
         "line-opacity": 0.42
       }
     });
+    map.addLayer({
+      id: "business-grid-cells-fine",
+      type: "fill",
+      source: "business-grid-fine-source",
+      minzoom: 11.8,
+      paint: {
+        "fill-color": businessFillColor,
+        "fill-opacity": 0.68
+      }
+    });
+    map.addLayer({
+      id: "business-grid-outline-fine",
+      type: "line",
+      source: "business-grid-fine-source",
+      minzoom: 11.8,
+      paint: {
+        "line-color": "rgba(255,255,255,0.26)",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 12, 0.25, 16, 0.55],
+        "line-opacity": 0.5
+      }
+    });
+    map.addLayer({
+      id: "business-poi-detail",
+      type: "circle",
+      source: "business-poi-detail-source",
+      minzoom: 13.2,
+      paint: {
+        "circle-color": [
+          "match",
+          ["get", "category"],
+          "retail",
+          "#c94b59",
+          "office",
+          "#6d5bd0",
+          "public",
+          "#d0782a",
+          "#2c90c6"
+        ],
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 13.2, 1.8, 16, 4.2],
+        "circle-stroke-color": "#ffffff",
+        "circle-stroke-width": 0.8,
+        "circle-opacity": ["interpolate", ["linear"], ["zoom"], 13.2, 0.35, 16, 0.86]
+      }
+    });
 
-    map.on("mouseenter", "business-grid-cells", () => {
-      map.getCanvas().style.cursor = "pointer";
-    });
-    map.on("mouseleave", "business-grid-cells", () => {
-      map.getCanvas().style.cursor = "";
-    });
-    map.on("click", "business-grid-cells", (e) => {
+    const showBusinessPopup = (e) => {
       const f = e.features && e.features[0];
       if (!f) return;
       const props = f.properties || {};
@@ -543,6 +589,16 @@
         .setLngLat(e.lngLat)
         .setHTML(html)
         .addTo(map);
+    };
+
+    ["business-grid-cells-coarse", "business-grid-cells-fine"].forEach((layerId) => {
+      map.on("mouseenter", layerId, () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", layerId, () => {
+        map.getCanvas().style.cursor = "";
+      });
+      map.on("click", layerId, showBusinessPopup);
     });
   }
 
