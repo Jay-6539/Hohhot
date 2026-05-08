@@ -1,0 +1,103 @@
+:root {
+  --bg: #f5f7fb;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --card: #ffffff;
+  --brand: #0b63ce;
+  --border: #e5e7eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.6;
+}
+
+.container {
+  width: min(1080px, 92vw);
+  margin: 0 auto;
+}
+
+.hero {
+  background: linear-gradient(120deg, #0b63ce, #4895ef);
+  color: #fff;
+  padding: 56px 0;
+}
+
+.hero h1 {
+  margin: 0 0 10px;
+  font-size: 2rem;
+}
+
+.hero p {
+  margin: 0;
+  opacity: 0.95;
+}
+
+.badge-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.badge-row span {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.9rem;
+}
+
+.card-grid {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.card,
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(16, 24, 40, 0.04);
+}
+
+.card h2,
+.panel h2 {
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+
+ul,
+ol {
+  padding-left: 20px;
+}
+
+.panel {
+  margin-top: 14px;
+}
+
+a {
+  color: var(--brand);
+  word-break: break-all;
+}
+
+.footer {
+  margin-top: 24px;
+  border-top: 1px solid var(--border);
+  background: #fff;
+}
+
+.footer p {
+  margin: 0;
+  padding: 14px 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
