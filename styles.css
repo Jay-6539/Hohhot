@@ -50,8 +50,10 @@ body {
 
 .nav {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
 }
 
 .nav a {
@@ -154,7 +156,7 @@ ol {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 14px;
-  min-height: 320px;
+  min-height: 260px;
 }
 
 .chart-box h3 {
@@ -166,6 +168,17 @@ ol {
   margin-top: 8px;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+.chart-canvas-wrap {
+  height: 260px;
+  width: 100%;
+}
+
+.chart-canvas-wrap canvas {
+  width: 100% !important;
+  height: 260px !important;
+  display: block;
 }
 
 .table-wrap {
@@ -220,7 +233,25 @@ a {
 }
 
 @media (max-width: 768px) {
+  .topbar-inner {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 10px 0;
+  }
+
+  .nav {
+    width: 100%;
+  }
+
   .hero h1 {
     font-size: 1.6rem;
+  }
+
+  .chart-canvas-wrap {
+    height: 220px;
+  }
+
+  .chart-canvas-wrap canvas {
+    height: 220px !important;
   }
 }
