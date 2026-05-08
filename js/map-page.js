@@ -16,11 +16,6 @@
     return;
   }
   const sbCfg = cfg.supabase || {};
-  const hasSupabaseLib = window.supabase && typeof window.supabase.createClient === "function";
-  const supabaseClient =
-    hasSupabaseLib && sbCfg.url && sbCfg.anonKey
-      ? window.supabase.createClient(sbCfg.url, sbCfg.anonKey)
-      : null;
 
   function outOfChina(lon, lat) {
     return lon < 72.004 || lon > 137.8347 || lat < 0.8293 || lat > 55.8271;
@@ -158,9 +153,9 @@
   }
 
   async function fetchSupabasePoi() {
-    if (!supabaseClient) {
+    if (!sbCfg.url || !sbCfg.anonKey || !sbCfg.table) {
       // eslint-disable-next-line no-console
-      console.warn("Supabase client unavailable, fallback to local POI.");
+      console.warn("Supabase config unavailable, fallback to local POI.");
       return { type: "FeatureCollection", features: [] };
     }
 
@@ -169,15 +164,30 @@
     const categoryField = (sbCfg.columns && sbCfg.columns.bigCategory) || "大类";
     const pageSize = sbCfg.pageSize || 1000;
     const maxRows = sbCfg.maxRows || 50000;
-    const selectFields = `${xField},${yField},${categoryField}`;
+    const baseUrl = String(sbCfg.url).replace(/\/+$/, "");
+    const tablePath = encodeURIComponent(sbCfg.table);
+    const selectFields = `${encodeURIComponent(xField)},${encodeURIComponent(yField)},category:${encodeURIComponent(categoryField)}`;
+    const headers = {
+      apikey: sbCfg.anonKey,
+      Authorization: `Bearer ${sbCfg.anonKey}`
+    };
 
     const features = [];
     for (let from = 0; from < maxRows; from += pageSize) {
-      const to = from + pageSize - 1;
-      const { data, error } = await supabaseClient.from(sbCfg.table).select(selectFields).range(from, to);
-      if (error) {
+      const url = `${baseUrl}/rest/v1/${tablePath}?select=${selectFields}&limit=${pageSize}&offset=${from}`;
+      let data = null;
+      try {
+        const res = await fetch(url, { headers });
+        if (!res.ok) {
+          const errText = await res.text();
+          // eslint-disable-next-line no-console
+          console.warn(`Supabase POI query failed: ${res.status} ${errText}`);
+          return { type: "FeatureCollection", features: [] };
+        }
+        data = await res.json();
+      } catch (err) {
         // eslint-disable-next-line no-console
-        console.warn("Supabase POI query failed:", error.message || error);
+        console.warn("Supabase POI query failed:", err && err.message ? err.message : err);
         return { type: "FeatureCollection", features: [] };
       }
       if (!data || !data.length) break;
@@ -186,7 +196,7 @@
         const lon = Number(row[xField]);
         const lat = Number(row[yField]);
         if (!Number.isFinite(lon) || !Number.isFinite(lat)) return;
-        const rawCategory = row[categoryField];
+        const rawCategory = row.category ?? row[categoryField];
         features.push({
           type: "Feature",
           properties: {
