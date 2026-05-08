@@ -16,6 +16,70 @@
     return;
   }
   const sbCfg = cfg.supabase || {};
+  const cacheCfg = cfg.cache || {};
+  const cacheEnabled = cacheCfg.enabled !== false;
+  const cacheTtlMs = Math.max(1, Number(cacheCfg.ttlHours || 24)) * 60 * 60 * 1000;
+  const cacheDbName = "hohhot-map-cache";
+  const cacheStoreName = "kv";
+  const cacheKey = `layers-v1-${sbCfg.table || "poi"}-${sbCfg.coordSystem || "wgs84"}-${
+    (sbCfg.offsetMeters && sbCfg.offsetMeters.east) || 0
+  }-${(sbCfg.offsetMeters && sbCfg.offsetMeters.north) || 0}`;
+
+  function openCacheDb() {
+    return new Promise((resolve, reject) => {
+      if (!window.indexedDB) {
+        reject(new Error("indexedDB unavailable"));
+        return;
+      }
+      const req = indexedDB.open(cacheDbName, 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(cacheStoreName)) db.createObjectStore(cacheStoreName);
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error || new Error("open cache db failed"));
+    });
+  }
+
+  async function readLayerCache() {
+    if (!cacheEnabled) return null;
+    try {
+      const db = await openCacheDb();
+      const result = await new Promise((resolve, reject) => {
+        const tx = db.transaction(cacheStoreName, "readonly");
+        const store = tx.objectStore(cacheStoreName);
+        const req = store.get(cacheKey);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error || new Error("read cache failed"));
+      });
+      db.close();
+      if (!result || !result.timestamp || !result.payload) return null;
+      if (Date.now() - Number(result.timestamp) > cacheTtlMs) return null;
+      return result.payload;
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn("Map cache read failed:", err && err.message ? err.message : err);
+      return null;
+    }
+  }
+
+  async function writeLayerCache(payload) {
+    if (!cacheEnabled || !payload) return;
+    try {
+      const db = await openCacheDb();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(cacheStoreName, "readwrite");
+        const store = tx.objectStore(cacheStoreName);
+        const req = store.put({ timestamp: Date.now(), payload }, cacheKey);
+        req.onsuccess = () => resolve(null);
+        req.onerror = () => reject(req.error || new Error("write cache failed"));
+      });
+      db.close();
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn("Map cache write failed:", err && err.message ? err.message : err);
+    }
+  }
 
   function outOfChina(lon, lat) {
     return lon < 72.004 || lon > 137.8347 || lat < 0.8293 || lat > 55.8271;
@@ -772,6 +836,20 @@
   }
 
   async function buildAllLayers() {
+    const cachedLayers = await readLayerCache();
+    if (cachedLayers) {
+      // eslint-disable-next-line no-console
+      console.info(`Map cache hit: poi=${(cachedLayers.gcjPoi && cachedLayers.gcjPoi.features && cachedLayers.gcjPoi.features.length) || 0}`);
+      addBoundaryLayer(cachedLayers.gcjBoundary);
+      addTrafficLayers(cachedLayers.gcjRoads);
+      addBusinessLayers(cachedLayers.gcjPoi);
+      addGreenLayers(cachedLayers.gcjGreen);
+      addProjectSite(cfg.projectSite);
+      switchMode("all");
+      wireButtons();
+      return;
+    }
+
     const boundaryRaw = await fetchOverpass(cfg.queries.boundary);
     const roadsRaw = await fetchOverpass(cfg.queries.roads);
     const greenRaw = await fetchOverpass(cfg.queries.green);
@@ -814,6 +892,15 @@
       : convertFeatureCollectionToGcj(safePoi);
     const gcjBoundary = convertFeatureCollectionToGcj(safeBoundary);
     const gcjGreen = convertFeatureCollectionToGcj(compactGreen);
+
+    await writeLayerCache({
+      gcjRoads,
+      gcjPoi,
+      gcjBoundary,
+      gcjGreen
+    });
+    // eslint-disable-next-line no-console
+    console.info("Map cache updated from network.");
 
     addBoundaryLayer(gcjBoundary);
     addTrafficLayers(gcjRoads);

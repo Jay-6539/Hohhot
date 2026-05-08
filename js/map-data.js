@@ -51,6 +51,11 @@ window.HohhotMapData = {
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter"
   ],
+  cache: {
+    enabled: true,
+    // 地图数据本地缓存有效期（小时）
+    ttlHours: 24
+  },
   supabase: {
     url: "https://oebgnmohndeurjwzdtdj.supabase.co",
     anonKey: "sb_publishable_8ws18EcSbSjc1q4ZIQ2NeA_cDRqPM93",
