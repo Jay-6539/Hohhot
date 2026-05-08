@@ -522,8 +522,8 @@
   }
 
   function addBusinessLayers(poiFC) {
-    const businessGridCoarse = buildBusinessGridFromPoi(poiFC, 0.008);
-    const businessGridFine = buildBusinessGridFromPoi(poiFC, 0.003);
+    const businessGridCoarse = buildBusinessGridFromPoi(poiFC, 0.004);
+    const businessGridFine = buildBusinessGridFromPoi(poiFC, 0.0015);
     map.addSource("business-grid-coarse-source", { type: "geojson", data: businessGridCoarse });
     map.addSource("business-grid-fine-source", { type: "geojson", data: businessGridFine });
     map.addSource("business-poi-detail-source", { type: "geojson", data: poiFC });

@@ -13,7 +13,7 @@ window.HohhotMapData = {
     coordinates: [111.6618, 40.8196],
     offsetMeters: {
       east: 0,
-      north: 60
+      north: 110
     }
   },
   mapStyle: {
@@ -57,11 +57,11 @@ window.HohhotMapData = {
     table: "Huhhot POI data",
     // 你的 POI 坐标来自高德体系，默认按 GCJ-02 处理；若后续换成 WGS84 可改为 "wgs84"
     coordSystem: "gcj02",
-    // POI 相对路网的人工校准（米）。当前按观测值修正：西偏约400m、北偏约80m
-    // 当前进一步微调：整体向西回调 50m，因此 east 从 400 调整为 350
+    // POI 相对路网的人工校准（米），按当前要求持续微调：
+    // 在 east=350,north=-80 基础上再“向西15m、向北10m”，得到 east=335,north=-70
     offsetMeters: {
-      east: 350,
-      north: -80
+      east: 335,
+      north: -70
     },
     columns: {
       x: "x",
