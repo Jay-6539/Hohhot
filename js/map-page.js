@@ -24,6 +24,28 @@
   const cacheKey = `layers-v1-${sbCfg.table || "poi"}-${sbCfg.coordSystem || "wgs84"}-${
     (sbCfg.offsetMeters && sbCfg.offsetMeters.east) || 0
   }-${(sbCfg.offsetMeters && sbCfg.offsetMeters.north) || 0}`;
+  const loadingEl = document.getElementById("mapLoading");
+  let loadingTimer = null;
+
+  function startLoading() {
+    if (!loadingEl) return;
+    let step = 0;
+    loadingEl.classList.remove("hidden");
+    loadingEl.textContent = "正在加载";
+    loadingTimer = window.setInterval(() => {
+      step = (step + 1) % 4;
+      loadingEl.textContent = `正在加载${".".repeat(step)}`;
+    }, 350);
+  }
+
+  function stopLoading() {
+    if (loadingTimer) {
+      window.clearInterval(loadingTimer);
+      loadingTimer = null;
+    }
+    if (!loadingEl) return;
+    loadingEl.classList.add("hidden");
+  }
 
   function openCacheDb() {
     return new Promise((resolve, reject) => {
@@ -814,102 +836,111 @@
     map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
   }
 
-  function switchMode(mode) {
+  function applyLayerVisibilityByButtons() {
     const ids = cfg.layerIds;
-    const showTraffic = mode === "all" || mode === "traffic";
-    const showBusiness = mode === "all" || mode === "business";
-    const showGreen = mode === "all" || mode === "green";
+    const showTraffic = document.getElementById("btn-traffic")?.classList.contains("active");
+    const showBusiness = document.getElementById("btn-business")?.classList.contains("active");
+    const showGreen = document.getElementById("btn-green")?.classList.contains("active");
     ids.traffic.forEach((id) => setLayerVisible(id, showTraffic));
     ids.business.forEach((id) => setLayerVisible(id, showBusiness));
     ids.green.forEach((id) => setLayerVisible(id, showGreen));
   }
 
   function wireButtons() {
-    const buttons = document.querySelectorAll(".map-toggle-btn");
-    buttons.forEach((btn) => {
+    ["btn-traffic", "btn-business", "btn-green"].forEach((id) => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
       btn.addEventListener("click", () => {
-        buttons.forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        switchMode(btn.dataset.layerMode);
+        btn.classList.toggle("active");
+        applyLayerVisibilityByButtons();
       });
     });
   }
 
   async function buildAllLayers() {
-    const cachedLayers = await readLayerCache();
-    if (cachedLayers) {
+    startLoading();
+    try {
+      const cachedLayers = await readLayerCache();
+      if (cachedLayers) {
+        // eslint-disable-next-line no-console
+        console.info(`Map cache hit: poi=${(cachedLayers.gcjPoi && cachedLayers.gcjPoi.features && cachedLayers.gcjPoi.features.length) || 0}`);
+        addBoundaryLayer(cachedLayers.gcjBoundary);
+        addTrafficLayers(cachedLayers.gcjRoads);
+        addBusinessLayers(cachedLayers.gcjPoi);
+        addGreenLayers(cachedLayers.gcjGreen);
+        addProjectSite(cfg.projectSite);
+        applyLayerVisibilityByButtons();
+        wireButtons();
+        return;
+      }
+
+      const boundaryRaw = await fetchOverpass(cfg.queries.boundary);
+      const roadsRaw = await fetchOverpass(cfg.queries.roads);
+      const greenRaw = await fetchOverpass(cfg.queries.green);
+      const supabasePoiFC = await fetchSupabasePoi();
+
+      const boundaryFC = toFeatureCollection(overpassToBoundaryFeatures(boundaryRaw));
+      const roadsFC = toFeatureCollection(overpassToLineFeatures(roadsRaw).slice(0, 12000));
+      const greenFC = toFeatureCollection(overpassToPolygonFeatures(greenRaw).slice(0, 4000));
+
+      const safeRoads = roadsFC.features.length ? roadsFC : cfg.fallbackRoads;
+      const useSupabasePoi = supabasePoiFC.features.length > 0;
+      const safePoi = useSupabasePoi ? supabasePoiFC : cfg.fallbackPoi;
       // eslint-disable-next-line no-console
-      console.info(`Map cache hit: poi=${(cachedLayers.gcjPoi && cachedLayers.gcjPoi.features && cachedLayers.gcjPoi.features.length) || 0}`);
-      addBoundaryLayer(cachedLayers.gcjBoundary);
-      addTrafficLayers(cachedLayers.gcjRoads);
-      addBusinessLayers(cachedLayers.gcjPoi);
-      addGreenLayers(cachedLayers.gcjGreen);
+      console.info(`Business POI source: ${useSupabasePoi ? "supabase" : "fallback"}, count=${safePoi.features.length}`);
+      if (useSupabasePoi) {
+        // eslint-disable-next-line no-console
+        console.info(`Business POI coord system: ${sbCfg.coordSystem || "wgs84"}`);
+        // eslint-disable-next-line no-console
+        console.info(
+          `Business POI offset(m): east=${(sbCfg.offsetMeters && sbCfg.offsetMeters.east) || 0}, north=${
+            (sbCfg.offsetMeters && sbCfg.offsetMeters.north) || 0
+          }`
+        );
+      }
+      const safeGreen = greenFC.features.length ? greenFC : cfg.fallbackGreen;
+      const safeBoundary = boundaryFC.features.length ? boundaryFC : cfg.fallbackBoundary;
+      const compactGreenFeatures = filterLargePolygons(safeGreen.features, 0.8);
+      const compactGreen =
+        compactGreenFeatures.length > 0
+          ? toFeatureCollection(compactGreenFeatures)
+          : cfg.fallbackGreen;
+
+      const gcjRoads = convertFeatureCollectionToGcj(safeRoads);
+      const gcjPoi = useSupabasePoi
+        ? applyPointOffsetMeters(
+            convertPoiByCoordSystem(safePoi, sbCfg.coordSystem),
+            Number((sbCfg.offsetMeters && sbCfg.offsetMeters.east) || 0),
+            Number((sbCfg.offsetMeters && sbCfg.offsetMeters.north) || 0)
+          )
+        : convertFeatureCollectionToGcj(safePoi);
+      const gcjBoundary = convertFeatureCollectionToGcj(safeBoundary);
+      const gcjGreen = convertFeatureCollectionToGcj(compactGreen);
+
+      await writeLayerCache({
+        gcjRoads,
+        gcjPoi,
+        gcjBoundary,
+        gcjGreen
+      });
+      // eslint-disable-next-line no-console
+      console.info("Map cache updated from network.");
+
+      addBoundaryLayer(gcjBoundary);
+      addTrafficLayers(gcjRoads);
+      addBusinessLayers(gcjPoi);
+      addGreenLayers(gcjGreen);
       addProjectSite(cfg.projectSite);
-      switchMode("all");
+
+      applyLayerVisibilityByButtons();
       wireButtons();
-      return;
-    }
-
-    const boundaryRaw = await fetchOverpass(cfg.queries.boundary);
-    const roadsRaw = await fetchOverpass(cfg.queries.roads);
-    const greenRaw = await fetchOverpass(cfg.queries.green);
-    const supabasePoiFC = await fetchSupabasePoi();
-
-    const boundaryFC = toFeatureCollection(overpassToBoundaryFeatures(boundaryRaw));
-    const roadsFC = toFeatureCollection(overpassToLineFeatures(roadsRaw).slice(0, 12000));
-    const greenFC = toFeatureCollection(overpassToPolygonFeatures(greenRaw).slice(0, 4000));
-
-    const safeRoads = roadsFC.features.length ? roadsFC : cfg.fallbackRoads;
-    const useSupabasePoi = supabasePoiFC.features.length > 0;
-    const safePoi = useSupabasePoi ? supabasePoiFC : cfg.fallbackPoi;
-    // eslint-disable-next-line no-console
-    console.info(`Business POI source: ${useSupabasePoi ? "supabase" : "fallback"}, count=${safePoi.features.length}`);
-    if (useSupabasePoi) {
+    } catch (err) {
       // eslint-disable-next-line no-console
-      console.info(`Business POI coord system: ${sbCfg.coordSystem || "wgs84"}`);
-      // eslint-disable-next-line no-console
-      console.info(
-        `Business POI offset(m): east=${(sbCfg.offsetMeters && sbCfg.offsetMeters.east) || 0}, north=${
-          (sbCfg.offsetMeters && sbCfg.offsetMeters.north) || 0
-        }`
-      );
+      console.warn("Build layers failed:", err && err.message ? err.message : err);
+      showMapError("地图数据加载异常，请稍后刷新重试。");
+    } finally {
+      stopLoading();
     }
-    const safeGreen = greenFC.features.length ? greenFC : cfg.fallbackGreen;
-    const safeBoundary = boundaryFC.features.length ? boundaryFC : cfg.fallbackBoundary;
-    const compactGreenFeatures = filterLargePolygons(safeGreen.features, 0.8);
-    const compactGreen =
-      compactGreenFeatures.length > 0
-        ? toFeatureCollection(compactGreenFeatures)
-        : cfg.fallbackGreen;
-
-    const gcjRoads = convertFeatureCollectionToGcj(safeRoads);
-    const gcjPoi = useSupabasePoi
-      ? applyPointOffsetMeters(
-          convertPoiByCoordSystem(safePoi, sbCfg.coordSystem),
-          Number((sbCfg.offsetMeters && sbCfg.offsetMeters.east) || 0),
-          Number((sbCfg.offsetMeters && sbCfg.offsetMeters.north) || 0)
-        )
-      : convertFeatureCollectionToGcj(safePoi);
-    const gcjBoundary = convertFeatureCollectionToGcj(safeBoundary);
-    const gcjGreen = convertFeatureCollectionToGcj(compactGreen);
-
-    await writeLayerCache({
-      gcjRoads,
-      gcjPoi,
-      gcjBoundary,
-      gcjGreen
-    });
-    // eslint-disable-next-line no-console
-    console.info("Map cache updated from network.");
-
-    addBoundaryLayer(gcjBoundary);
-    addTrafficLayers(gcjRoads);
-    addBusinessLayers(gcjPoi);
-    addGreenLayers(gcjGreen);
-    addProjectSite(cfg.projectSite);
-
-    switchMode("all");
-    wireButtons();
   }
 
   map.on("load", () => {

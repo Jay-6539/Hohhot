@@ -35,10 +35,9 @@
     <main class="container">
       <section class="panel map-toolbar-panel">
         <div class="map-toolbar">
-          <button class="map-toggle-btn active" id="btn-all" type="button" data-layer-mode="all">全部</button>
-          <button class="map-toggle-btn" id="btn-traffic" type="button" data-layer-mode="traffic">交通</button>
-          <button class="map-toggle-btn" id="btn-business" type="button" data-layer-mode="business">业态布局</button>
-          <button class="map-toggle-btn" id="btn-green" type="button" data-layer-mode="green">绿化信息</button>
+          <button class="map-toggle-btn active" id="btn-traffic" type="button">交通</button>
+          <button class="map-toggle-btn active" id="btn-business" type="button">业态</button>
+          <button class="map-toggle-btn active" id="btn-green" type="button">景观</button>
         </div>
         <p class="note">提示：业态支持缩放精细化——低级别看总览网格，高级别显示细网格与 POI 点位细节。</p>
       </section>
@@ -46,13 +45,14 @@
       <section class="map-layout">
         <article class="panel map-panel">
           <div id="cityMap" class="city-map"></div>
+          <div id="mapLoading" class="map-loading-overlay hidden">正在加载...</div>
         </article>
         <aside class="panel map-legend-panel">
           <h2>图例说明</h2>
           <ul class="map-legend-list">
             <li><span class="legend-swatch legend-traffic"></span>交通路网（按道路等级）</li>
             <li><span class="legend-swatch legend-business-gradient"></span>业态活跃度网格（可随缩放细化）</li>
-            <li><span class="legend-swatch legend-green"></span>绿化范围与密度（公园/林地/草地）</li>
+            <li><span class="legend-swatch legend-green"></span>景观范围与密度（公园/林地/草地）</li>
             <li><span class="legend-swatch legend-project-site"></span>项目位置：民族时代广场</li>
           </ul>
           <p class="note">底图来源为高德地图；业态数据来自 Supabase `Huhhot POI data` 表，道路与绿化来自 OSM/Overpass，失败时使用本地兜底样本。</p>
@@ -68,7 +68,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
     <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-    <script src="./js/map-data.js?v=20260508-map-v14"></script>
-    <script src="./js/map-page.js?v=20260508-map-v14"></script>
+    <script src="./js/map-data.js?v=20260508-map-v15"></script>
+    <script src="./js/map-page.js?v=20260508-map-v15"></script>
   </body>
 </html>
