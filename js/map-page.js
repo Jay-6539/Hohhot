@@ -531,6 +531,53 @@
     });
   }
 
+  function addProjectSite(site) {
+    if (!site || !Array.isArray(site.coordinates) || site.coordinates.length < 2) return;
+    const gcj = wgs84ToGcj02(site.coordinates[0], site.coordinates[1]);
+    const projectFC = {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: { name: site.name || "项目位置" },
+          geometry: { type: "Point", coordinates: gcj }
+        }
+      ]
+    };
+
+    map.addSource("project-site-source", { type: "geojson", data: projectFC });
+    map.addLayer({
+      id: "project-site-dot",
+      type: "circle",
+      source: "project-site-source",
+      paint: {
+        "circle-color": "#8b0000",
+        "circle-radius": 7,
+        "circle-stroke-color": "#ffffff",
+        "circle-stroke-width": 2,
+        "circle-opacity": 0.96
+      }
+    });
+    map.addLayer({
+      id: "project-site-label",
+      type: "symbol",
+      source: "project-site-source",
+      layout: {
+        "text-field": ["get", "name"],
+        "text-size": 12,
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Regular"],
+        "text-offset": [0, 1.2],
+        "text-anchor": "top",
+        "text-allow-overlap": true
+      },
+      paint: {
+        "text-color": "#6d1111",
+        "text-halo-color": "#ffffff",
+        "text-halo-width": 1.2
+      }
+    });
+  }
+
   function setLayerVisible(layerId, visible) {
     if (!map.getLayer(layerId)) return;
     map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
@@ -587,6 +634,7 @@
     addTrafficLayers(gcjRoads);
     addBusinessLayers(gcjPoi);
     addGreenLayers(gcjGreen);
+    addProjectSite(cfg.projectSite);
 
     switchMode("all");
     wireButtons();

@@ -7,6 +7,11 @@ window.HohhotMapData = {
     [110.95, 40.1],
     [112.75, 41.35]
   ],
+  projectSite: {
+    name: "民族时代广场",
+    // WGS84 坐标，渲染前会自动转换为 GCJ-02
+    coordinates: [111.6618, 40.8196]
+  },
   mapStyle: {
     version: 8,
     sources: {

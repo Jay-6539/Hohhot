@@ -362,6 +362,15 @@ ol {
   border: 1px solid #2a7f5f;
 }
 
+.legend-project-site {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #8b0000;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px rgba(139, 0, 0, 0.55);
+}
+
 .table-wrap {
   overflow-x: auto;
 }
