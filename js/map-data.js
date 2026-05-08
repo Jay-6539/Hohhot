@@ -1,8 +1,8 @@
 window.HohhotMapData = {
   center: [111.7492, 40.8426],
   zoom: 9.8,
-  pitch: 52,
-  bearing: -18,
+  pitch: 0,
+  bearing: 0,
   bounds: [
     [110.95, 40.1],
     [112.75, 41.35]
@@ -10,20 +10,23 @@ window.HohhotMapData = {
   mapStyle: {
     version: 8,
     sources: {
-      osm: {
+      gaode: {
         type: "raster",
         tiles: [
-          "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+          "https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
+          "https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
+          "https://webrd03.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
+          "https://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}"
         ],
         tileSize: 256,
-        attribution: "© OpenStreetMap contributors"
+        attribution: "© 高德地图"
       }
     },
     layers: [
       {
-        id: "osm-raster",
+        id: "gaode-raster",
         type: "raster",
-        source: "osm",
+        source: "gaode",
         minzoom: 0,
         maxzoom: 19
       }
@@ -34,17 +37,17 @@ window.HohhotMapData = {
     "https://overpass.kumi.systems/api/interpreter"
   ],
   layerIds: {
-    traffic: ["traffic-lines", "traffic-density-3d"],
-    business: ["business-density-3d"],
-    green: ["green-polygons", "green-density-3d"]
+    traffic: ["traffic-lines"],
+    business: ["business-poi"],
+    green: ["green-polygons", "green-outline"]
   },
   colors: {
-    trafficLine: "#3ac18e",
-    traffic3d: "#1ea676",
-    business3d: "#0f7f58",
-    greenFill: "#9ae6c7",
-    green3d: "#44be8c",
-    boundaryLine: "#0f7f58"
+    trafficLine: "#1f8f68",
+    businessPoi: "#0b8f6e",
+    businessPoiStroke: "#ffffff",
+    greenFill: "#8bd6b1",
+    greenOutline: "#2a7f5f",
+    boundaryLine: "#2a7f5f"
   },
   fallbackBoundary: {
     type: "FeatureCollection",
@@ -86,11 +89,11 @@ window.HohhotMapData = {
   fallbackPoi: {
     type: "FeatureCollection",
     features: [
-      { type: "Feature", properties: { category: "business" }, geometry: { type: "Point", coordinates: [111.67, 40.82] } },
-      { type: "Feature", properties: { category: "business" }, geometry: { type: "Point", coordinates: [111.72, 40.84] } },
-      { type: "Feature", properties: { category: "business" }, geometry: { type: "Point", coordinates: [111.78, 40.8] } },
-      { type: "Feature", properties: { category: "business" }, geometry: { type: "Point", coordinates: [111.58, 40.86] } },
-      { type: "Feature", properties: { category: "business" }, geometry: { type: "Point", coordinates: [112.02, 40.74] } }
+      { type: "Feature", properties: { category: "retail" }, geometry: { type: "Point", coordinates: [111.67, 40.82] } },
+      { type: "Feature", properties: { category: "service" }, geometry: { type: "Point", coordinates: [111.72, 40.84] } },
+      { type: "Feature", properties: { category: "office" }, geometry: { type: "Point", coordinates: [111.78, 40.8] } },
+      { type: "Feature", properties: { category: "service" }, geometry: { type: "Point", coordinates: [111.58, 40.86] } },
+      { type: "Feature", properties: { category: "retail" }, geometry: { type: "Point", coordinates: [112.02, 40.74] } }
     ]
   },
   fallbackGreen: {
@@ -140,9 +143,9 @@ out body;`,
 area["name"="呼和浩特市"]["boundary"="administrative"]->.a;
 (
   way(area.a)["leisure"="park"];
-  way(area.a)["landuse"~"grass|forest|recreation_ground"];
+  way(area.a)["landuse"="forest"];
   relation(area.a)["leisure"="park"];
-  relation(area.a)["landuse"~"grass|forest|recreation_ground"];
+  relation(area.a)["landuse"="forest"];
 );
 out geom;`
   }

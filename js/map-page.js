@@ -16,10 +16,74 @@
     return;
   }
 
+  function outOfChina(lon, lat) {
+    return lon < 72.004 || lon > 137.8347 || lat < 0.8293 || lat > 55.8271;
+  }
+
+  function transformLat(x, y) {
+    let ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+    ret += ((20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0) / 3.0;
+    ret += ((20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin((y / 3.0) * Math.PI)) * 2.0) / 3.0;
+    ret += ((160.0 * Math.sin((y / 12.0) * Math.PI) + 320 * Math.sin((y * Math.PI) / 30.0)) * 2.0) / 3.0;
+    return ret;
+  }
+
+  function transformLon(x, y) {
+    let ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+    ret += ((20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0) / 3.0;
+    ret += ((20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin((x / 3.0) * Math.PI)) * 2.0) / 3.0;
+    ret += ((150.0 * Math.sin((x / 12.0) * Math.PI) + 300.0 * Math.sin((x / 30.0) * Math.PI)) * 2.0) / 3.0;
+    return ret;
+  }
+
+  function wgs84ToGcj02(lon, lat) {
+    if (outOfChina(lon, lat)) return [lon, lat];
+    const a = 6378245.0;
+    const ee = 0.00669342162296594323;
+    let dLat = transformLat(lon - 105.0, lat - 35.0);
+    let dLon = transformLon(lon - 105.0, lat - 35.0);
+    const radLat = (lat / 180.0) * Math.PI;
+    let magic = Math.sin(radLat);
+    magic = 1 - ee * magic * magic;
+    const sqrtMagic = Math.sqrt(magic);
+    dLat = (dLat * 180.0) / (((a * (1 - ee)) / (magic * sqrtMagic)) * Math.PI);
+    dLon = (dLon * 180.0) / ((a / sqrtMagic) * Math.cos(radLat) * Math.PI);
+    return [lon + dLon, lat + dLat];
+  }
+
+  function convertCoordsToGcj(coords, geometryType) {
+    if (geometryType === "Point") return wgs84ToGcj02(coords[0], coords[1]);
+    if (geometryType === "LineString") return coords.map((pt) => wgs84ToGcj02(pt[0], pt[1]));
+    if (geometryType === "Polygon") return coords.map((ring) => ring.map((pt) => wgs84ToGcj02(pt[0], pt[1])));
+    if (geometryType === "MultiPolygon") {
+      return coords.map((poly) => poly.map((ring) => ring.map((pt) => wgs84ToGcj02(pt[0], pt[1]))));
+    }
+    return coords;
+  }
+
+  function convertFeatureCollectionToGcj(featureCollection) {
+    return {
+      type: "FeatureCollection",
+      features: (featureCollection.features || []).map((f) => ({
+        ...f,
+        geometry: {
+          ...f.geometry,
+          coordinates: convertCoordsToGcj(f.geometry.coordinates, f.geometry.type)
+        }
+      }))
+    };
+  }
+
+  function convertBoundsToGcj(bounds) {
+    const sw = wgs84ToGcj02(bounds[0][0], bounds[0][1]);
+    const ne = wgs84ToGcj02(bounds[1][0], bounds[1][1]);
+    return [sw, ne];
+  }
+
   const map = new maplibregl.Map({
     container: "cityMap",
     style: cfg.mapStyle,
-    center: cfg.center,
+    center: wgs84ToGcj02(cfg.center[0], cfg.center[1]),
     zoom: cfg.zoom,
     pitch: cfg.pitch,
     bearing: cfg.bearing,
@@ -27,7 +91,7 @@
   });
 
   map.addControl(new maplibregl.NavigationControl({ showCompass: true }), "top-right");
-  map.fitBounds(cfg.bounds, { padding: 24, duration: 0 });
+  map.fitBounds(convertBoundsToGcj(cfg.bounds), { padding: 24, duration: 0 });
   map.on("error", () => {
     showMapError("地图底图资源加载异常，请稍后刷新重试。");
   });
@@ -39,6 +103,15 @@
     if (level.includes("primary")) return "primary";
     if (level.includes("secondary")) return "secondary";
     return "tertiary";
+  }
+
+  function classifyPoi(tags = {}) {
+    const amenity = tags.amenity || "";
+    if (amenity && /restaurant|cafe|marketplace/.test(amenity)) return "retail";
+    if (amenity && /bank|hospital|school|university/.test(amenity)) return "service";
+    if (tags.shop) return "retail";
+    if (tags.office) return "office";
+    return "service";
   }
 
   async function fetchOverpass(query) {
@@ -80,7 +153,7 @@
       .filter((el) => el.type === "node" && typeof el.lon === "number" && typeof el.lat === "number")
       .map((el) => ({
         type: "Feature",
-        properties: { category: "business" },
+        properties: { category: classifyPoi(el.tags) },
         geometry: { type: "Point", coordinates: [el.lon, el.lat] }
       }));
   }
@@ -109,63 +182,27 @@
     return { type: "FeatureCollection", features };
   }
 
-  function centroidOfLine(coords) {
-    if (!coords || !coords.length) return null;
-    const mid = coords[Math.floor(coords.length / 2)];
-    return mid ? [mid[0], mid[1]] : null;
-  }
-
-  function centroidOfPolygon(poly) {
-    const ring = poly && poly[0];
-    if (!ring || !ring.length) return null;
-    let x = 0;
-    let y = 0;
+  function polygonBBoxArea(coords) {
+    const ring = coords && coords[0];
+    if (!ring || !ring.length) return 0;
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
     ring.forEach((pt) => {
-      x += pt[0];
-      y += pt[1];
+      if (pt[0] < minX) minX = pt[0];
+      if (pt[1] < minY) minY = pt[1];
+      if (pt[0] > maxX) maxX = pt[0];
+      if (pt[1] > maxY) maxY = pt[1];
     });
-    return [x / ring.length, y / ring.length];
+    return (maxX - minX) * (maxY - minY);
   }
 
-  function buildGridExtrusions(points, cellSize, minHeight, stepHeight) {
-    const cellMap = new Map();
-    points.forEach((p) => {
-      const gx = Math.floor(p[0] / cellSize) * cellSize;
-      const gy = Math.floor(p[1] / cellSize) * cellSize;
-      const key = `${gx.toFixed(5)}_${gy.toFixed(5)}`;
-      cellMap.set(key, (cellMap.get(key) || 0) + 1);
+  function filterLargePolygons(features, maxBBoxArea) {
+    return features.filter((f) => {
+      if (!f.geometry || f.geometry.type !== "Polygon") return false;
+      return polygonBBoxArea(f.geometry.coordinates) <= maxBBoxArea;
     });
-
-    const features = [];
-    cellMap.forEach((count, key) => {
-      const [sx, sy] = key.split("_").map(Number);
-      const ex = sx + cellSize;
-      const ey = sy + cellSize;
-      features.push({
-        type: "Feature",
-        properties: {
-          density: count,
-          height: minHeight + count * stepHeight
-        },
-        geometry: {
-          type: "Polygon",
-          coordinates: [[[sx, sy], [ex, sy], [ex, ey], [sx, ey], [sx, sy]]]
-        }
-      });
-    });
-    return toFeatureCollection(features);
-  }
-
-  function roadDensityPoints(roads) {
-    return roads
-      .map((f) => centroidOfLine(f.geometry.coordinates))
-      .filter(Boolean);
-  }
-
-  function greenDensityPoints(greens) {
-    return greens
-      .map((f) => centroidOfPolygon(f.geometry.coordinates))
-      .filter(Boolean);
   }
 
   function addBoundaryLayer(boundaryFC) {
@@ -190,14 +227,26 @@
     });
   }
 
-  function addTrafficLayers(roadsFC, trafficGridFC) {
+  function addTrafficLayers(roadsFC) {
     map.addSource("traffic-roads", { type: "geojson", data: roadsFC });
     map.addLayer({
       id: "traffic-lines",
       type: "line",
       source: "traffic-roads",
       paint: {
-        "line-color": cfg.colors.trafficLine,
+        "line-color": [
+          "match",
+          ["get", "level"],
+          "motorway",
+          "#0c6f53",
+          "trunk",
+          "#158664",
+          "primary",
+          cfg.colors.trafficLine,
+          "secondary",
+          "#3aaa84",
+          "#6bc6a6"
+        ],
         "line-width": [
           "match",
           ["get", "level"],
@@ -211,38 +260,48 @@
           2.2,
           1.6
         ],
-        "line-opacity": 0.78
-      }
-    });
-
-    map.addSource("traffic-grid", { type: "geojson", data: trafficGridFC });
-    map.addLayer({
-      id: "traffic-density-3d",
-      type: "fill-extrusion",
-      source: "traffic-grid",
-      paint: {
-        "fill-extrusion-color": cfg.colors.traffic3d,
-        "fill-extrusion-height": ["get", "height"],
-        "fill-extrusion-opacity": 0.72
+        "line-opacity": 0.86
       }
     });
   }
 
-  function addBusinessLayers(businessGridFC) {
-    map.addSource("business-grid", { type: "geojson", data: businessGridFC });
+  function addBusinessLayers(poiFC) {
+    map.addSource("business-poi-source", { type: "geojson", data: poiFC });
     map.addLayer({
-      id: "business-density-3d",
-      type: "fill-extrusion",
-      source: "business-grid",
+      id: "business-poi",
+      type: "circle",
+      source: "business-poi-source",
       paint: {
-        "fill-extrusion-color": cfg.colors.business3d,
-        "fill-extrusion-height": ["get", "height"],
-        "fill-extrusion-opacity": 0.8
+        "circle-color": [
+          "match",
+          ["get", "category"],
+          "retail",
+          "#0d9b73",
+          "service",
+          "#27b88d",
+          "office",
+          "#13805f",
+          cfg.colors.businessPoi
+        ],
+        "circle-radius": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          8,
+          2.5,
+          10,
+          4.2,
+          12,
+          6
+        ],
+        "circle-stroke-color": cfg.colors.businessPoiStroke,
+        "circle-stroke-width": 1,
+        "circle-opacity": 0.76
       }
     });
   }
 
-  function addGreenLayers(greenFC, greenGridFC) {
+  function addGreenLayers(greenFC) {
     map.addSource("green-polygons-source", { type: "geojson", data: greenFC });
     map.addLayer({
       id: "green-polygons",
@@ -250,19 +309,17 @@
       source: "green-polygons-source",
       paint: {
         "fill-color": cfg.colors.greenFill,
-        "fill-opacity": 0.42
+        "fill-opacity": 0.34
       }
     });
-
-    map.addSource("green-grid", { type: "geojson", data: greenGridFC });
     map.addLayer({
-      id: "green-density-3d",
-      type: "fill-extrusion",
-      source: "green-grid",
+      id: "green-outline",
+      type: "line",
+      source: "green-polygons-source",
       paint: {
-        "fill-extrusion-color": cfg.colors.green3d,
-        "fill-extrusion-height": ["get", "height"],
-        "fill-extrusion-opacity": 0.64
+        "line-color": cfg.colors.greenOutline,
+        "line-width": 1.2,
+        "line-opacity": 0.8
       }
     });
   }
@@ -308,19 +365,21 @@
     const safePoi = poiFC.features.length ? poiFC : cfg.fallbackPoi;
     const safeGreen = greenFC.features.length ? greenFC : cfg.fallbackGreen;
     const safeBoundary = boundaryFC.features.length ? boundaryFC : cfg.fallbackBoundary;
+    const compactGreenFeatures = filterLargePolygons(safeGreen.features, 0.08);
+    const compactGreen =
+      compactGreenFeatures.length > 0
+        ? toFeatureCollection(compactGreenFeatures)
+        : cfg.fallbackGreen;
 
-    const trafficPoints = roadDensityPoints(safeRoads.features);
-    const businessPoints = safePoi.features.map((f) => f.geometry.coordinates).filter(Boolean);
-    const greenPoints = greenDensityPoints(safeGreen.features);
+    const gcjRoads = convertFeatureCollectionToGcj(safeRoads);
+    const gcjPoi = convertFeatureCollectionToGcj(safePoi);
+    const gcjBoundary = convertFeatureCollectionToGcj(safeBoundary);
+    const gcjGreen = convertFeatureCollectionToGcj(compactGreen);
 
-    const trafficGridFC = buildGridExtrusions(trafficPoints, 0.03, 40, 22);
-    const businessGridFC = buildGridExtrusions(businessPoints, 0.025, 60, 28);
-    const greenGridFC = buildGridExtrusions(greenPoints, 0.04, 16, 10);
-
-    addBoundaryLayer(safeBoundary);
-    addTrafficLayers(safeRoads, trafficGridFC);
-    addBusinessLayers(businessGridFC);
-    addGreenLayers(safeGreen, greenGridFC);
+    addBoundaryLayer(gcjBoundary);
+    addTrafficLayers(gcjRoads);
+    addBusinessLayers(gcjPoi);
+    addGreenLayers(gcjGreen);
 
     switchMode("all");
     wireButtons();

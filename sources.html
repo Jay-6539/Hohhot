@@ -86,7 +86,11 @@
         <h2>地图数据来源（新增）</h2>
         <ul>
           <li>
-            OpenStreetMap + Overpass API（道路、POI、绿地公开查询）：
+            高德地图（底图瓦片服务）：
+            <a href="https://ditu.amap.com/" target="_blank" rel="noreferrer noopener">https://ditu.amap.com/</a>
+          </li>
+          <li>
+            OpenStreetMap + Overpass API（道路、POI、绿地专题数据查询）：
             <a href="https://overpass-turbo.eu/" target="_blank" rel="noreferrer noopener">https://overpass-turbo.eu/</a>
           </li>
           <li>
@@ -98,6 +102,7 @@
             <a href="https://geojson.hxkj.vip/" target="_blank" rel="noreferrer noopener">https://geojson.hxkj.vip/</a>
           </li>
           <li>更新时间与说明：地图页采用“实时查询优先，查询失败回退本地示例”的策略，并在图例注明。</li>
+          <li>坐标说明：因高德底图采用 GCJ-02 坐标，叠加专题图层在前端完成 WGS84→GCJ-02 对齐转换。</li>
         </ul>
       </section>
     </main>

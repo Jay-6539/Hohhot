@@ -28,7 +28,7 @@
     <header class="hero">
       <div class="container">
         <h1>呼和浩特城市地图</h1>
-        <p>通过 3D 可视化查看交通、业态布局与绿化空间分布，支持图层切换与信息对比。</p>
+        <p>通过 2D 地图查看交通、业态布局与绿化空间分布，支持图层切换与信息对比。</p>
       </div>
     </header>
 
@@ -40,7 +40,7 @@
           <button class="map-toggle-btn" id="btn-business" type="button" data-layer-mode="business">业态布局</button>
           <button class="map-toggle-btn" id="btn-green" type="button" data-layer-mode="green">绿化信息</button>
         </div>
-        <p class="note">提示：3D体块高度表示该区域的相对密度或强度，非绝对值。</p>
+        <p class="note">提示：交通按路网等级显示，业态按 POI 点位显示，绿化按公园/林地范围高亮。</p>
       </section>
 
       <section class="map-layout">
@@ -50,11 +50,11 @@
         <aside class="panel map-legend-panel">
           <h2>图例说明</h2>
           <ul class="map-legend-list">
-            <li><span class="legend-swatch legend-traffic"></span>交通活跃度（道路密度）</li>
-            <li><span class="legend-swatch legend-business"></span>业态活跃度（POI聚合）</li>
-            <li><span class="legend-swatch legend-green"></span>绿化空间强度（公园/绿地）</li>
+            <li><span class="legend-swatch legend-traffic"></span>交通路网（按道路等级）</li>
+            <li><span class="legend-swatch legend-business"></span>业态 POI（商业/服务/办公）</li>
+            <li><span class="legend-swatch legend-green"></span>绿化范围（公园/林地）</li>
           </ul>
-          <p class="note">数据优先来自公开 OSM/Overpass 查询，失败时使用本地兜底样本。</p>
+          <p class="note">底图来源为高德地图，专题数据来自公开 OSM/Overpass 查询，失败时使用本地兜底样本。</p>
         </aside>
       </section>
     </main>

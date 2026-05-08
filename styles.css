@@ -319,15 +319,21 @@ ol {
 }
 
 .legend-traffic {
-  background: #1ea676;
+  width: 16px;
+  height: 4px;
+  border-radius: 999px;
+  background: #1f8f68;
 }
 
 .legend-business {
-  background: #0f7f58;
+  background: #0b8f6e;
+  border-radius: 999px;
+  border: 1px solid #ffffff;
 }
 
 .legend-green {
-  background: #44be8c;
+  background: #8bd6b1;
+  border: 1px solid #2a7f5f;
 }
 
 .table-wrap {
