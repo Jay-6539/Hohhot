@@ -51,13 +51,15 @@ window.HohhotMapData = {
     url: "https://oebgnmohndeurjwzdtdj.supabase.co",
     anonKey: "sb_publishable_8ws18EcSbSjc1q4ZIQ2NeA_cDRqPM93",
     table: "Huhhot POI data",
+    // 你的 POI 坐标来自高德体系，默认按 GCJ-02 处理；若后续换成 WGS84 可改为 "wgs84"
+    coordSystem: "gcj02",
     columns: {
       x: "x",
       y: "y",
       bigCategory: "大类"
     },
     pageSize: 1000,
-    maxRows: 50000
+    maxRows: 200000
   },
   layerIds: {
     traffic: ["traffic-lines"],

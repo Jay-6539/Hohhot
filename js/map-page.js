@@ -75,6 +75,12 @@
     };
   }
 
+  function convertPoiByCoordSystem(featureCollection, coordSystem) {
+    const cs = String(coordSystem || "wgs84").toLowerCase();
+    if (cs === "gcj02" || cs === "gcj-02") return featureCollection;
+    return convertFeatureCollectionToGcj(featureCollection);
+  }
+
   function convertBoundsToGcj(bounds) {
     const sw = wgs84ToGcj02(bounds[0][0], bounds[0][1]);
     const ne = wgs84ToGcj02(bounds[1][0], bounds[1][1]);
@@ -163,7 +169,7 @@
     const yField = (sbCfg.columns && sbCfg.columns.y) || "y";
     const categoryField = (sbCfg.columns && sbCfg.columns.bigCategory) || "大类";
     const pageSize = sbCfg.pageSize || 1000;
-    const maxRows = sbCfg.maxRows || 50000;
+    const maxRows = sbCfg.maxRows || 200000;
     const baseUrl = String(sbCfg.url).replace(/\/+$/, "");
     const tablePath = encodeURIComponent(sbCfg.table);
     const selectFields = `${encodeURIComponent(xField)},${encodeURIComponent(yField)},category:${encodeURIComponent(categoryField)}`;
@@ -752,6 +758,10 @@
     const safePoi = useSupabasePoi ? supabasePoiFC : cfg.fallbackPoi;
     // eslint-disable-next-line no-console
     console.info(`Business POI source: ${useSupabasePoi ? "supabase" : "fallback"}, count=${safePoi.features.length}`);
+    if (useSupabasePoi) {
+      // eslint-disable-next-line no-console
+      console.info(`Business POI coord system: ${sbCfg.coordSystem || "wgs84"}`);
+    }
     const safeGreen = greenFC.features.length ? greenFC : cfg.fallbackGreen;
     const safeBoundary = boundaryFC.features.length ? boundaryFC : cfg.fallbackBoundary;
     const compactGreenFeatures = filterLargePolygons(safeGreen.features, 0.8);
@@ -761,7 +771,9 @@
         : cfg.fallbackGreen;
 
     const gcjRoads = convertFeatureCollectionToGcj(safeRoads);
-    const gcjPoi = convertFeatureCollectionToGcj(safePoi);
+    const gcjPoi = useSupabasePoi
+      ? convertPoiByCoordSystem(safePoi, sbCfg.coordSystem)
+      : convertFeatureCollectionToGcj(safePoi);
     const gcjBoundary = convertFeatureCollectionToGcj(safeBoundary);
     const gcjGreen = convertFeatureCollectionToGcj(compactGreen);
 
