@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>城市地图 - 呼和浩特城市信息网站</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="container topbar-inner">
+        <a class="brand" href="./index.html">呼和浩特信息站</a>
+        <nav class="nav">
+          <a href="./index.html">首页</a>
+          <a href="./population.html">人口结构</a>
+          <a href="./economy.html">经济运行</a>
+          <a href="./industry.html">重点产业</a>
+          <a href="./education.html">教育发展</a>
+          <a href="./planning.html">未来规划</a>
+          <a class="active" href="./map.html">城市地图</a>
+          <a href="./sources.html">数据来源</a>
+        </nav>
+      </div>
+    </div>
+
+    <header class="hero">
+      <div class="container">
+        <h1>呼和浩特城市地图</h1>
+        <p>通过 3D 可视化查看交通、业态布局与绿化空间分布，支持图层切换与信息对比。</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="panel map-toolbar-panel">
+        <div class="map-toolbar">
+          <button class="map-toggle-btn active" id="btn-all" type="button" data-layer-mode="all">全部</button>
+          <button class="map-toggle-btn" id="btn-traffic" type="button" data-layer-mode="traffic">交通</button>
+          <button class="map-toggle-btn" id="btn-business" type="button" data-layer-mode="business">业态布局</button>
+          <button class="map-toggle-btn" id="btn-green" type="button" data-layer-mode="green">绿化信息</button>
+        </div>
+        <p class="note">提示：3D体块高度表示该区域的相对密度或强度，非绝对值。</p>
+      </section>
+
+      <section class="map-layout">
+        <article class="panel map-panel">
+          <div id="cityMap" class="city-map"></div>
+        </article>
+        <aside class="panel map-legend-panel">
+          <h2>图例说明</h2>
+          <ul class="map-legend-list">
+            <li><span class="legend-swatch legend-traffic"></span>交通活跃度（道路密度）</li>
+            <li><span class="legend-swatch legend-business"></span>业态活跃度（POI聚合）</li>
+            <li><span class="legend-swatch legend-green"></span>绿化空间强度（公园/绿地）</li>
+          </ul>
+          <p class="note">数据优先来自公开 OSM/Overpass 查询，失败时使用本地兜底样本。</p>
+        </aside>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>地图数据会按来源与时间更新，具体口径见“数据来源”页面地图分组。</p>
+      </div>
+    </footer>
+
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="./js/map-data.js"></script>
+    <script src="./js/map-page.js"></script>
+  </body>
+</html>

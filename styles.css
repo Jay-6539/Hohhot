@@ -223,6 +223,98 @@ ol {
   display: block;
 }
 
+.map-toolbar-panel {
+  margin-top: 8px;
+}
+
+.map-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.map-toggle-btn {
+  border: 1px solid #d9e9e2;
+  background: #f7fcf9;
+  color: #2a5b48;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.map-toggle-btn:hover {
+  border-color: #98dcc0;
+  background: #edf9f3;
+}
+
+.map-toggle-btn.active {
+  background: #169c6d;
+  color: #ffffff;
+  border-color: #169c6d;
+}
+
+.map-layout {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(260px, 0.9fr);
+  gap: 10px;
+}
+
+.map-panel {
+  padding: 10px;
+}
+
+.city-map {
+  width: 100%;
+  height: min(680px, 66vh);
+  min-height: 520px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e7edea;
+}
+
+.map-legend-panel h2 {
+  margin-bottom: 10px;
+}
+
+.map-legend-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.map-legend-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+  color: #3d4959;
+  margin-bottom: 8px;
+}
+
+.legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.legend-traffic {
+  background: #1ea676;
+}
+
+.legend-business {
+  background: #0f7f58;
+}
+
+.legend-green {
+  background: #44be8c;
+}
+
 .table-wrap {
   overflow-x: auto;
 }
@@ -303,5 +395,14 @@ a {
 
   .chart-canvas-wrap canvas {
     height: 100% !important;
+  }
+
+  .map-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .city-map {
+    height: 58vh;
+    min-height: 420px;
   }
 }
