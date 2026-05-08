@@ -92,8 +92,11 @@
 
   map.addControl(new maplibregl.NavigationControl({ showCompass: true }), "top-right");
   map.fitBounds(convertBoundsToGcj(cfg.bounds), { padding: 24, duration: 0 });
-  map.on("error", () => {
-    showMapError("地图底图资源加载异常，请稍后刷新重试。");
+  map.on("error", (event) => {
+    // 某些瓦片或单个图层请求失败不应直接覆盖整张地图，避免误判为“完全加载失败”。
+    // 仅在控制台记录，保留当前可用图层继续展示。
+    // eslint-disable-next-line no-console
+    console.warn("Map resource error:", event && event.error ? event.error.message : event);
   });
 
   function sanitizeLevel(level) {
