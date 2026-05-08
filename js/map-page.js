@@ -81,6 +81,26 @@
     return convertFeatureCollectionToGcj(featureCollection);
   }
 
+  function applyPointOffsetMeters(featureCollection, eastMeters, northMeters) {
+    if (!eastMeters && !northMeters) return featureCollection;
+    const features = (featureCollection.features || []).map((f) => {
+      if (!f.geometry || f.geometry.type !== "Point" || !Array.isArray(f.geometry.coordinates)) return f;
+      const lon = Number(f.geometry.coordinates[0]);
+      const lat = Number(f.geometry.coordinates[1]);
+      if (!Number.isFinite(lon) || !Number.isFinite(lat)) return f;
+      const dLat = northMeters / 111320;
+      const dLon = eastMeters / (111320 * Math.cos((lat * Math.PI) / 180));
+      return {
+        ...f,
+        geometry: {
+          ...f.geometry,
+          coordinates: [lon + dLon, lat + dLat]
+        }
+      };
+    });
+    return { type: "FeatureCollection", features };
+  }
+
   function convertBoundsToGcj(bounds) {
     const sw = wgs84ToGcj02(bounds[0][0], bounds[0][1]);
     const ne = wgs84ToGcj02(bounds[1][0], bounds[1][1]);
@@ -761,6 +781,12 @@
     if (useSupabasePoi) {
       // eslint-disable-next-line no-console
       console.info(`Business POI coord system: ${sbCfg.coordSystem || "wgs84"}`);
+      // eslint-disable-next-line no-console
+      console.info(
+        `Business POI offset(m): east=${(sbCfg.offsetMeters && sbCfg.offsetMeters.east) || 0}, north=${
+          (sbCfg.offsetMeters && sbCfg.offsetMeters.north) || 0
+        }`
+      );
     }
     const safeGreen = greenFC.features.length ? greenFC : cfg.fallbackGreen;
     const safeBoundary = boundaryFC.features.length ? boundaryFC : cfg.fallbackBoundary;
@@ -772,7 +798,11 @@
 
     const gcjRoads = convertFeatureCollectionToGcj(safeRoads);
     const gcjPoi = useSupabasePoi
-      ? convertPoiByCoordSystem(safePoi, sbCfg.coordSystem)
+      ? applyPointOffsetMeters(
+          convertPoiByCoordSystem(safePoi, sbCfg.coordSystem),
+          Number((sbCfg.offsetMeters && sbCfg.offsetMeters.east) || 0),
+          Number((sbCfg.offsetMeters && sbCfg.offsetMeters.north) || 0)
+        )
       : convertFeatureCollectionToGcj(safePoi);
     const gcjBoundary = convertFeatureCollectionToGcj(safeBoundary);
     const gcjGreen = convertFeatureCollectionToGcj(compactGreen);

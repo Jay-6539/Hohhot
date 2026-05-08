@@ -53,6 +53,12 @@ window.HohhotMapData = {
     table: "Huhhot POI data",
     // 你的 POI 坐标来自高德体系，默认按 GCJ-02 处理；若后续换成 WGS84 可改为 "wgs84"
     coordSystem: "gcj02",
+    // POI 相对路网的人工校准（米）。当前按观测值修正：西偏约400m、北偏约80m
+    // 因此向东 +400m、向南 -80m
+    offsetMeters: {
+      east: 400,
+      north: -80
+    },
     columns: {
       x: "x",
       y: "y",
