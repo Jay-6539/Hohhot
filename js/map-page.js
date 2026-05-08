@@ -81,6 +81,12 @@
     return convertFeatureCollectionToGcj(featureCollection);
   }
 
+  function offsetLonLatByMeters(lon, lat, eastMeters, northMeters) {
+    const dLat = northMeters / 111320;
+    const dLon = eastMeters / (111320 * Math.cos((lat * Math.PI) / 180));
+    return [lon + dLon, lat + dLat];
+  }
+
   function applyPointOffsetMeters(featureCollection, eastMeters, northMeters) {
     if (!eastMeters && !northMeters) return featureCollection;
     const features = (featureCollection.features || []).map((f) => {
@@ -88,13 +94,12 @@
       const lon = Number(f.geometry.coordinates[0]);
       const lat = Number(f.geometry.coordinates[1]);
       if (!Number.isFinite(lon) || !Number.isFinite(lat)) return f;
-      const dLat = northMeters / 111320;
-      const dLon = eastMeters / (111320 * Math.cos((lat * Math.PI) / 180));
+      const next = offsetLonLatByMeters(lon, lat, eastMeters, northMeters);
       return {
         ...f,
         geometry: {
           ...f.geometry,
-          coordinates: [lon + dLon, lat + dLat]
+          coordinates: next
         }
       };
     });
@@ -693,13 +698,16 @@
   function addProjectSite(site) {
     if (!site || !Array.isArray(site.coordinates) || site.coordinates.length < 2) return;
     const gcj = wgs84ToGcj02(site.coordinates[0], site.coordinates[1]);
+    const east = Number((site.offsetMeters && site.offsetMeters.east) || 0);
+    const north = Number((site.offsetMeters && site.offsetMeters.north) || 0);
+    const gcjAdjusted = offsetLonLatByMeters(gcj[0], gcj[1], east, north);
     const projectFC = {
       type: "FeatureCollection",
       features: [
         {
           type: "Feature",
           properties: { name: site.name || "项目位置" },
-          geometry: { type: "Point", coordinates: gcj }
+          geometry: { type: "Point", coordinates: gcjAdjusted }
         }
       ]
     };

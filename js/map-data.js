@@ -10,7 +10,11 @@ window.HohhotMapData = {
   projectSite: {
     name: "民族时代广场",
     // WGS84 坐标，渲染前会自动转换为 GCJ-02
-    coordinates: [111.6618, 40.8196]
+    coordinates: [111.6618, 40.8196],
+    offsetMeters: {
+      east: 0,
+      north: 60
+    }
   },
   mapStyle: {
     version: 8,
@@ -54,9 +58,9 @@ window.HohhotMapData = {
     // 你的 POI 坐标来自高德体系，默认按 GCJ-02 处理；若后续换成 WGS84 可改为 "wgs84"
     coordSystem: "gcj02",
     // POI 相对路网的人工校准（米）。当前按观测值修正：西偏约400m、北偏约80m
-    // 因此向东 +400m、向南 -80m
+    // 当前进一步微调：整体向西回调 50m，因此 east 从 400 调整为 350
     offsetMeters: {
-      east: 400,
+      east: 350,
       north: -80
     },
     columns: {
