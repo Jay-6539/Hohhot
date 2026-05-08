@@ -40,7 +40,7 @@
           <button class="map-toggle-btn" id="btn-business" type="button" data-layer-mode="business">业态布局</button>
           <button class="map-toggle-btn" id="btn-green" type="button" data-layer-mode="green">绿化信息</button>
         </div>
-        <p class="note">提示：交通覆盖主次干路与支路，业态按功能分类显示 POI，绿化同时展示范围与密度。</p>
+        <p class="note">提示：底图已灰度化；业态采用网格色阶（红高蓝低）表达综合活跃度，点击网格可查看功能结构。</p>
       </section>
 
       <section class="map-layout">
@@ -51,10 +51,7 @@
           <h2>图例说明</h2>
           <ul class="map-legend-list">
             <li><span class="legend-swatch legend-traffic"></span>交通路网（按道路等级）</li>
-            <li><span class="legend-swatch legend-business-retail"></span>业态 POI-商业零售</li>
-            <li><span class="legend-swatch legend-business-service"></span>业态 POI-生活服务</li>
-            <li><span class="legend-swatch legend-business-office"></span>业态 POI-办公园区</li>
-            <li><span class="legend-swatch legend-business-public"></span>业态 POI-公共设施</li>
+            <li><span class="legend-swatch legend-business-gradient"></span>业态活跃度网格（红=高，蓝=低）</li>
             <li><span class="legend-swatch legend-green"></span>绿化范围与密度（公园/林地/草地）</li>
           </ul>
           <p class="note">底图来源为高德地图，专题数据来自公开 OSM/Overpass 查询，失败时使用本地兜底样本。</p>
@@ -70,7 +67,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
     <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-    <script src="./js/map-data.js?v=20260508-map-v2"></script>
-    <script src="./js/map-page.js?v=20260508-map-v2"></script>
+    <script src="./js/map-data.js?v=20260508-map-v3"></script>
+    <script src="./js/map-page.js?v=20260508-map-v3"></script>
   </body>
 </html>

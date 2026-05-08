@@ -27,6 +27,12 @@ window.HohhotMapData = {
         id: "gaode-raster",
         type: "raster",
         source: "gaode",
+        paint: {
+          "raster-saturation": -1,
+          "raster-contrast": 0.2,
+          "raster-brightness-min": 0.05,
+          "raster-brightness-max": 0.95
+        },
         minzoom: 0,
         maxzoom: 19
       }
@@ -38,15 +44,16 @@ window.HohhotMapData = {
   ],
   layerIds: {
     traffic: ["traffic-lines"],
-    business: ["business-poi-retail", "business-poi-service", "business-poi-office", "business-poi-public"],
+    business: ["business-grid-cells", "business-grid-outline"],
     green: ["green-density-heat", "green-polygons", "green-outline"]
   },
   colors: {
     trafficLine: "#1f8f68",
-    businessPoiRetail: "#11a579",
-    businessPoiService: "#2c90c6",
-    businessPoiOffice: "#6d5bd0",
-    businessPoiPublic: "#d0782a",
+    businessHigh: "#b11226",
+    businessMidHigh: "#f08f61",
+    businessMid: "#e2d7a4",
+    businessLowMid: "#74b4dc",
+    businessLow: "#1b78b2",
     businessPoiStroke: "#ffffff",
     greenFill: "#8bd6b1",
     greenOutline: "#2a7f5f",

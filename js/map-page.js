@@ -351,37 +351,133 @@
     });
   }
 
-  function addBusinessLayers(poiFC) {
-    map.addSource("business-poi-source", { type: "geojson", data: poiFC });
-    [
-      { id: "business-poi-retail", category: "retail", color: cfg.colors.businessPoiRetail },
-      { id: "business-poi-service", category: "service", color: cfg.colors.businessPoiService },
-      { id: "business-poi-office", category: "office", color: cfg.colors.businessPoiOffice },
-      { id: "business-poi-public", category: "public", color: cfg.colors.businessPoiPublic }
-    ].forEach((layer) => {
-      map.addLayer({
-        id: layer.id,
-        type: "circle",
-        source: "business-poi-source",
-        filter: ["==", ["get", "category"], layer.category],
-        paint: {
-          "circle-color": layer.color,
-          "circle-radius": [
-            "interpolate",
-            ["linear"],
-            ["zoom"],
-            8,
-            2.5,
-            10,
-            4.6,
-            12,
-            6.6
-          ],
-          "circle-stroke-color": cfg.colors.businessPoiStroke,
-          "circle-stroke-width": 1,
-          "circle-opacity": 0.82
+  function buildBusinessGridFromPoi(poiFC, cellSize) {
+    const buckets = new Map();
+    (poiFC.features || []).forEach((f) => {
+      const coords = f.geometry && f.geometry.coordinates;
+      if (!coords || coords.length < 2) return;
+      const gx = Math.floor(coords[0] / cellSize) * cellSize;
+      const gy = Math.floor(coords[1] / cellSize) * cellSize;
+      const key = `${gx.toFixed(5)}_${gy.toFixed(5)}`;
+      const bucket = buckets.get(key) || {
+        count: 0,
+        categoryCount: { retail: 0, service: 0, office: 0, public: 0 }
+      };
+      bucket.count += 1;
+      const c = (f.properties && f.properties.category) || "service";
+      if (!Object.prototype.hasOwnProperty.call(bucket.categoryCount, c)) bucket.categoryCount[c] = 0;
+      bucket.categoryCount[c] += 1;
+      buckets.set(key, bucket);
+    });
+
+    let maxCount = 1;
+    buckets.forEach((b) => {
+      if (b.count > maxCount) maxCount = b.count;
+    });
+
+    const gridFeatures = [];
+    buckets.forEach((bucket, key) => {
+      const [sx, sy] = key.split("_").map(Number);
+      const ex = sx + cellSize;
+      const ey = sy + cellSize;
+      const categoryList = Object.entries(bucket.categoryCount);
+      const categoryKinds = categoryList.filter((entry) => entry[1] > 0).length;
+      let dominant = "service";
+      let dominantCount = 0;
+      categoryList.forEach(([k, v]) => {
+        if (v > dominantCount) {
+          dominant = k;
+          dominantCount = v;
         }
       });
+
+      const densityNorm = Math.min(1, bucket.count / maxCount);
+      const diversityNorm = categoryKinds / 4;
+      const score = densityNorm * 0.72 + diversityNorm * 0.28;
+
+      gridFeatures.push({
+        type: "Feature",
+        properties: {
+          score,
+          count: bucket.count,
+          diversity: Number(diversityNorm.toFixed(2)),
+          dominant
+        },
+        geometry: {
+          type: "Polygon",
+          coordinates: [[[sx, sy], [ex, sy], [ex, ey], [sx, ey], [sx, sy]]]
+        }
+      });
+    });
+
+    return { type: "FeatureCollection", features: gridFeatures };
+  }
+
+  function addBusinessLayers(poiFC) {
+    const businessGrid = buildBusinessGridFromPoi(poiFC, 0.008);
+    map.addSource("business-grid-source", { type: "geojson", data: businessGrid });
+    map.addLayer({
+      id: "business-grid-cells",
+      type: "fill",
+      source: "business-grid-source",
+      paint: {
+        "fill-color": [
+          "interpolate",
+          ["linear"],
+          ["get", "score"],
+          0,
+          cfg.colors.businessLow,
+          0.25,
+          cfg.colors.businessLowMid,
+          0.5,
+          cfg.colors.businessMid,
+          0.75,
+          cfg.colors.businessMidHigh,
+          1,
+          cfg.colors.businessHigh
+        ],
+        "fill-opacity": 0.82
+      }
+    });
+    map.addLayer({
+      id: "business-grid-outline",
+      type: "line",
+      source: "business-grid-source",
+      paint: {
+        "line-color": "rgba(255,255,255,0.24)",
+        "line-width": 0.35,
+        "line-opacity": 0.42
+      }
+    });
+
+    map.on("mouseenter", "business-grid-cells", () => {
+      map.getCanvas().style.cursor = "pointer";
+    });
+    map.on("mouseleave", "business-grid-cells", () => {
+      map.getCanvas().style.cursor = "";
+    });
+    map.on("click", "business-grid-cells", (e) => {
+      const f = e.features && e.features[0];
+      if (!f) return;
+      const props = f.properties || {};
+      const dominantMap = {
+        retail: "商业零售",
+        service: "生活服务",
+        office: "办公园区",
+        public: "公共设施"
+      };
+      const dominantLabel = dominantMap[props.dominant] || "生活服务";
+      const html = `
+        <div style="font-size:12px;line-height:1.5;">
+          <div><strong>业态活跃度分区</strong></div>
+          <div>POI 数量：${props.count || 0}</div>
+          <div>功能多样性：${props.diversity || 0}</div>
+          <div>主导功能：${dominantLabel}</div>
+        </div>`;
+      new maplibregl.Popup({ closeButton: false, offset: 8 })
+        .setLngLat(e.lngLat)
+        .setHTML(html)
+        .addTo(map);
     });
   }
 

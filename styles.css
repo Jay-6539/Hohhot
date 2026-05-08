@@ -349,6 +349,14 @@ ol {
   border: 1px solid #ffffff;
 }
 
+.legend-business-gradient {
+  width: 42px;
+  height: 10px;
+  border-radius: 3px;
+  border: 1px solid #d3dbe0;
+  background: linear-gradient(to right, #1b78b2 0%, #74b4dc 25%, #e2d7a4 50%, #f08f61 75%, #b11226 100%);
+}
+
 .legend-green {
   background: #8bd6b1;
   border: 1px solid #2a7f5f;
