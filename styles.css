@@ -4,7 +4,9 @@
   --muted: #6b7280;
   --card: #ffffff;
   --brand: #0b63ce;
+  --brand-dark: #084fa6;
   --border: #e5e7eb;
+  --ok: #0f766e;
 }
 
 * {
@@ -24,10 +26,53 @@ body {
   margin: 0 auto;
 }
 
+.topbar {
+  background: #ffffff;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 56px;
+}
+
+.brand {
+  font-weight: 700;
+  color: var(--brand-dark);
+  text-decoration: none;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.nav a {
+  text-decoration: none;
+  color: #334155;
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.92rem;
+}
+
+.nav a.active {
+  background: var(--brand);
+  color: #ffffff;
+  border-color: var(--brand);
+}
+
 .hero {
   background: linear-gradient(120deg, #0b63ce, #4895ef);
   color: #fff;
-  padding: 56px 0;
+  padding: 44px 0;
 }
 
 .hero h1 {
@@ -60,6 +105,19 @@ body {
   gap: 14px;
 }
 
+.metric {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--brand-dark);
+  font-weight: 700;
+}
+
+.metric-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
 .card,
 .panel {
   background: var(--card);
@@ -84,6 +142,65 @@ ol {
   margin-top: 14px;
 }
 
+.chart-grid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+.chart-box {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  min-height: 320px;
+}
+
+.chart-box h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.note {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+th,
+td {
+  border: 1px solid var(--border);
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+  font-size: 0.93rem;
+}
+
+th {
+  background: #f8fafc;
+}
+
+.tag {
+  display: inline-block;
+  border: 1px solid #a7f3d0;
+  background: #ecfdf5;
+  color: var(--ok);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.82rem;
+}
+
 a {
   color: var(--brand);
   word-break: break-all;
@@ -100,4 +217,10 @@ a {
   padding: 14px 0;
   color: var(--muted);
   font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+  .hero h1 {
+    font-size: 1.6rem;
+  }
 }

@@ -7,6 +7,21 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <div class="topbar">
+      <div class="container topbar-inner">
+        <a class="brand" href="./index.html">呼和浩特信息站</a>
+        <nav class="nav">
+          <a class="active" href="./index.html">首页</a>
+          <a href="./population.html">人口结构</a>
+          <a href="./economy.html">经济运行</a>
+          <a href="./industry.html">重点产业</a>
+          <a href="./education.html">教育发展</a>
+          <a href="./planning.html">未来规划</a>
+          <a href="./sources.html">数据来源</a>
+        </nav>
+      </div>
+    </div>
+
     <header class="hero">
       <div class="container">
         <h1>呼和浩特城市信息网站</h1>
@@ -22,83 +37,59 @@
     <main class="container">
       <section class="card-grid">
         <article class="card">
-          <h2>人口结构</h2>
-          <ul>
-            <li>常住人口：363.94万人（2024年末）</li>
-            <li>城镇化率：81.9%</li>
-            <li>重点关注：年龄结构与净流入变化</li>
-          </ul>
+          <p class="metric">363.94 万人</p>
+          <p class="metric-label">2024 年末常住人口</p>
         </article>
         <article class="card">
-          <h2>经济运行</h2>
-          <ul>
-            <li>GDP：4107.08亿元（2024年）</li>
-            <li>GDP增速：6.1%（可比价）</li>
-            <li>三次产业结构：4.2 : 31.3 : 64.5</li>
-          </ul>
+          <p class="metric">4107.08 亿元</p>
+          <p class="metric-label">2024 年地区生产总值（GDP）</p>
         </article>
         <article class="card">
-          <h2>重点产业</h2>
-          <ul>
-            <li>乳业集群持续强化</li>
-            <li>光伏硅材料产业链完善</li>
-            <li>生物医药与制造业协同发展</li>
-          </ul>
+          <p class="metric">6.1%</p>
+          <p class="metric-label">GDP 可比价同比增速</p>
         </article>
         <article class="card">
-          <h2>教育发展</h2>
-          <ul>
-            <li>教育财政投入持续增加</li>
-            <li>师资与学校建设稳步推进</li>
-            <li>人才供给与产业匹配是关键</li>
-          </ul>
+          <p class="metric">81.9%</p>
+          <p class="metric-label">2024 年城镇化率</p>
         </article>
         <article class="card">
-          <h2>未来规划</h2>
-          <ul>
-            <li>十四五收官进展跟踪</li>
-            <li>十五五方向与目标观察</li>
-            <li>基线/政策双情景预测</li>
-          </ul>
+          <p class="metric">4.2 : 31.3 : 64.5</p>
+          <p class="metric-label">三次产业结构（2024）</p>
+        </article>
+      </section>
+
+      <section class="chart-grid">
+        <article class="chart-box">
+          <h3>人口与城镇化趋势</h3>
+          <canvas id="overviewPopulationChart"></canvas>
+          <p class="note">来源：市级统计公报与统计服务资料（年度口径）。</p>
+        </article>
+        <article class="chart-box">
+          <h3>GDP 与增速</h3>
+          <canvas id="overviewEconomyChart"></canvas>
+          <p class="note">来源：2024年统计公报及历年公开资料。</p>
         </article>
       </section>
 
       <section class="panel">
-        <h2>分析结论（示例）</h2>
-        <p>
-          现状上，呼和浩特经济总量和城镇化水平保持较高增长，第三产业仍是增长主引擎。趋势上，在政策情景下，
-          人口吸引力与产业升级有望继续带动GDP和就业改善，但需关注外部需求波动和统计口径变化。
-        </p>
+        <h2>结论速览</h2>
+        <ul>
+          <li>当前经济结构以第三产业为主，服务业仍是增长主引擎。</li>
+          <li>人口与城镇化水平持续提升，首府吸引力保持稳定。</li>
+          <li>中长期表现受产业升级和政策执行节奏影响较大。</li>
+        </ul>
       </section>
 
       <section class="panel">
-        <h2>数据来源与外部链接</h2>
-        <ol>
-          <li>
-            呼和浩特市统计服务（统计公报/统计资料）：
-            <a href="http://tjj.huhhot.gov.cn/mobile/tjfw/" target="_blank" rel="noreferrer noopener">http://tjj.huhhot.gov.cn/mobile/tjfw/</a>
-          </li>
-          <li>
-            呼和浩特市发展和改革委员会（经济运行/规划政策）：
-            <a href="http://fgw.huhhot.gov.cn/ywgz/jjyx/" target="_blank" rel="noreferrer noopener">http://fgw.huhhot.gov.cn/ywgz/jjyx/</a>
-          </li>
-          <li>
-            国家统计局人口普查公报：
-            <a href="https://www.stats.gov.cn/sj/tjgb/rkpcgb/" target="_blank" rel="noreferrer noopener">https://www.stats.gov.cn/sj/tjgb/rkpcgb/</a>
-          </li>
-          <li>
-            数字呼和浩特“十四五”专项规划：
-            <a href="http://hlgena.huhhot.gov.cn/zwgk/zfxxgkzl/fdzdgknr/xqwj/202112/t20211207_1075146.html" target="_blank" rel="noreferrer noopener">专项规划链接</a>
-          </li>
-          <li>
-            生态环境“十四五”专项规划：
-            <a href="http://hlgena.huhhot.gov.cn/zwgk/zfxxgkzl/fdzdgknr/xqwj/202112/t20211207_1075039.html" target="_blank" rel="noreferrer noopener">专项规划链接</a>
-          </li>
-          <li>
-            2024年统计公报镜像（备份）：
-            <a href="https://static.0471tv.org.cn/rb/pad/con/202504/03/content_82339.html" target="_blank" rel="noreferrer noopener">公报镜像链接</a>
-          </li>
-        </ol>
+        <h2>继续查看</h2>
+        <div class="card-grid">
+          <article class="card"><a href="./population.html">进入人口结构页</a></article>
+          <article class="card"><a href="./economy.html">进入经济运行页</a></article>
+          <article class="card"><a href="./industry.html">进入重点产业页</a></article>
+          <article class="card"><a href="./education.html">进入教育发展页</a></article>
+          <article class="card"><a href="./planning.html">进入未来规划页</a></article>
+          <article class="card"><a href="./sources.html">查看全部数据来源</a></article>
+        </div>
       </section>
     </main>
 
@@ -107,5 +98,11 @@
         <p>说明：本网站为信息整合展示，预测结果需结合最新统计公报季度更新。</p>
       </div>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="./js/data.js"></script>
+    <script src="./js/charts.js"></script>
+    <script>
+      renderOverviewCharts();
+    </script>
   </body>
 </html>

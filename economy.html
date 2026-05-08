@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>经济运行 - 呼和浩特城市信息网站</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="container topbar-inner">
+        <a class="brand" href="./index.html">呼和浩特信息站</a>
+        <nav class="nav">
+          <a href="./index.html">首页</a>
+          <a href="./population.html">人口结构</a>
+          <a class="active" href="./economy.html">经济运行</a>
+          <a href="./industry.html">重点产业</a>
+          <a href="./education.html">教育发展</a>
+          <a href="./planning.html">未来规划</a>
+          <a href="./sources.html">数据来源</a>
+        </nav>
+      </div>
+    </div>
+
+    <header class="hero">
+      <div class="container">
+        <h1>经济运行分析</h1>
+        <p>跟踪 GDP、增速、产业结构、收入与消费变化。</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="chart-grid">
+        <article class="chart-box">
+          <h3>GDP总量（亿元）</h3>
+          <canvas id="gdpChart"></canvas>
+        </article>
+        <article class="chart-box">
+          <h3>GDP增速（%）</h3>
+          <canvas id="gdpGrowthChart"></canvas>
+        </article>
+        <article class="chart-box">
+          <h3>三次产业结构（2024）</h3>
+          <canvas id="industryStructureChart"></canvas>
+        </article>
+        <article class="chart-box">
+          <h3>居民可支配收入（元）</h3>
+          <canvas id="incomeChart"></canvas>
+        </article>
+      </section>
+
+      <section class="panel">
+        <h2>现状判断</h2>
+        <ul>
+          <li>经济总量持续扩张，增速保持在较高区间。</li>
+          <li>第三产业占比高，结构优化趋势明显。</li>
+          <li>居民收入持续增长，消费恢复与投资扩张共同支撑经济。</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>来源示例：国民经济和社会发展统计公报、统计服务数据。</p>
+      </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="./js/data.js"></script>
+    <script src="./js/charts.js"></script>
+    <script>
+      renderEconomyCharts();
+    </script>
+  </body>
+</html>

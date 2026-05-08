@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>人口结构 - 呼和浩特城市信息网站</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="container topbar-inner">
+        <a class="brand" href="./index.html">呼和浩特信息站</a>
+        <nav class="nav">
+          <a href="./index.html">首页</a>
+          <a class="active" href="./population.html">人口结构</a>
+          <a href="./economy.html">经济运行</a>
+          <a href="./industry.html">重点产业</a>
+          <a href="./education.html">教育发展</a>
+          <a href="./planning.html">未来规划</a>
+          <a href="./sources.html">数据来源</a>
+        </nav>
+      </div>
+    </div>
+
+    <header class="hero">
+      <div class="container">
+        <h1>人口结构分析</h1>
+        <p>关注常住人口、年龄结构、城镇化与人口流动趋势。</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="chart-grid">
+        <article class="chart-box">
+          <h3>常住人口趋势（万人）</h3>
+          <canvas id="popTrendChart"></canvas>
+        </article>
+        <article class="chart-box">
+          <h3>年龄结构（2020普查）</h3>
+          <canvas id="ageStructureChart"></canvas>
+        </article>
+        <article class="chart-box">
+          <h3>城镇化率趋势（%）</h3>
+          <canvas id="urbanRateChart"></canvas>
+        </article>
+        <article class="chart-box">
+          <h3>人口净流入（万人）</h3>
+          <canvas id="netFlowChart"></canvas>
+        </article>
+      </section>
+
+      <section class="panel">
+        <h2>现状判断</h2>
+        <ul>
+          <li>常住人口保持增长，城镇化水平持续提升。</li>
+          <li>老龄化趋势存在，但劳动年龄人口仍保持主体地位。</li>
+          <li>人口净流入对城市经济和教育资源配置提出更高要求。</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>来源示例：统计公报、人口普查、公报解读资料。</p>
+      </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="./js/data.js"></script>
+    <script src="./js/charts.js"></script>
+    <script>
+      renderPopulationCharts();
+    </script>
+  </body>
+</html>

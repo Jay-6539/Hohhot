@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>教育发展 - 呼和浩特城市信息网站</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="container topbar-inner">
+        <a class="brand" href="./index.html">呼和浩特信息站</a>
+        <nav class="nav">
+          <a href="./index.html">首页</a>
+          <a href="./population.html">人口结构</a>
+          <a href="./economy.html">经济运行</a>
+          <a href="./industry.html">重点产业</a>
+          <a class="active" href="./education.html">教育发展</a>
+          <a href="./planning.html">未来规划</a>
+          <a href="./sources.html">数据来源</a>
+        </nav>
+      </div>
+    </div>
+
+    <header class="hero">
+      <div class="container">
+        <h1>教育发展分析</h1>
+        <p>跟踪在校生、师资、教育财政投入与人才匹配。</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="chart-grid">
+        <article class="chart-box">
+          <h3>教育财政支出（亿元）</h3>
+          <canvas id="educationSpendingChart"></canvas>
+        </article>
+        <article class="chart-box">
+          <h3>在校生规模（万人）</h3>
+          <canvas id="studentCountChart"></canvas>
+        </article>
+        <article class="chart-box">
+          <h3>专任教师数量（万人）</h3>
+          <canvas id="teacherCountChart"></canvas>
+        </article>
+        <article class="chart-box">
+          <h3>人才与产业匹配指数</h3>
+          <canvas id="talentMatchChart"></canvas>
+        </article>
+      </section>
+
+      <section class="panel">
+        <h2>现状判断</h2>
+        <ul>
+          <li>教育投入持续增长，对学校建设和师资提升形成支撑。</li>
+          <li>在校生规模和教师规模整体稳定，需持续优化结构。</li>
+          <li>人才供给与重点产业需求匹配度逐步改善。</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>来源示例：财政公开信息、统计年鉴教育章节、统计公报。</p>
+      </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="./js/data.js"></script>
+    <script src="./js/charts.js"></script>
+    <script>
+      renderEducationCharts();
+    </script>
+  </body>
+</html>

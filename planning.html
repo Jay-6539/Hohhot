@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>未来规划 - 呼和浩特城市信息网站</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="container topbar-inner">
+        <a class="brand" href="./index.html">呼和浩特信息站</a>
+        <nav class="nav">
+          <a href="./index.html">首页</a>
+          <a href="./population.html">人口结构</a>
+          <a href="./economy.html">经济运行</a>
+          <a href="./industry.html">重点产业</a>
+          <a href="./education.html">教育发展</a>
+          <a class="active" href="./planning.html">未来规划</a>
+          <a href="./sources.html">数据来源</a>
+        </nav>
+      </div>
+    </div>
+
+    <header class="hero">
+      <div class="container">
+        <h1>未来规划与预测</h1>
+        <p>展示“基线情景 vs 政策情景”的区间预测与目标达成路径。</p>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="chart-grid">
+        <article class="chart-box">
+          <h3>GDP预测（2024-2030）</h3>
+          <canvas id="forecastGdpChart"></canvas>
+        </article>
+        <article class="chart-box">
+          <h3>人口预测（2024-2030）</h3>
+          <canvas id="forecastPopulationChart"></canvas>
+        </article>
+        <article class="chart-box">
+          <h3>城镇化率预测（%）</h3>
+          <canvas id="forecastUrbanRateChart"></canvas>
+        </article>
+        <article class="chart-box">
+          <h3>规划目标达成率（示例）</h3>
+          <canvas id="targetProgressChart"></canvas>
+        </article>
+      </section>
+
+      <section class="panel">
+        <h2>方法说明</h2>
+        <ul>
+          <li><span class="tag">基线情景</span>：按近年趋势平滑外推。</li>
+          <li><span class="tag">政策情景</span>：叠加规划目标与重点项目进度。</li>
+          <li>结果以区间呈现，避免单点预测误导。</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>提示：预测需按季度更新输入数据并滚动修正。</p>
+      </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="./js/data.js"></script>
+    <script src="./js/charts.js"></script>
+    <script>
+      renderPlanningCharts();
+    </script>
+  </body>
+</html>
