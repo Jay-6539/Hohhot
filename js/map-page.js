@@ -102,15 +102,20 @@
     if (level.includes("trunk")) return "trunk";
     if (level.includes("primary")) return "primary";
     if (level.includes("secondary")) return "secondary";
+    if (level.includes("residential")) return "residential";
+    if (level.includes("service")) return "service";
     return "tertiary";
   }
 
   function classifyPoi(tags = {}) {
     const amenity = tags.amenity || "";
-    if (amenity && /restaurant|cafe|marketplace/.test(amenity)) return "retail";
-    if (amenity && /bank|hospital|school|university/.test(amenity)) return "service";
+    if (amenity && /restaurant|cafe|fast_food|marketplace/.test(amenity)) return "retail";
+    if (amenity && /bank|hospital|clinic|pharmacy/.test(amenity)) return "service";
+    if (amenity && /school|university|college|library|bus_station|subway_entrance/.test(amenity)) return "public";
+    if (amenity && /government|post_office/.test(amenity)) return "public";
     if (tags.shop) return "retail";
     if (tags.office) return "office";
+    if (tags.tourism) return "public";
     return "service";
   }
 
@@ -150,11 +155,21 @@
   function overpassToPointFeatures(overpass) {
     if (!overpass) return [];
     return overpass.elements
-      .filter((el) => el.type === "node" && typeof el.lon === "number" && typeof el.lat === "number")
+      .filter((el) => {
+        if (el.type === "node" && typeof el.lon === "number" && typeof el.lat === "number") return true;
+        if ((el.type === "way" || el.type === "relation") && el.center && typeof el.center.lon === "number" && typeof el.center.lat === "number") return true;
+        return false;
+      })
       .map((el) => ({
         type: "Feature",
         properties: { category: classifyPoi(el.tags) },
-        geometry: { type: "Point", coordinates: [el.lon, el.lat] }
+        geometry: {
+          type: "Point",
+          coordinates:
+            el.type === "node"
+              ? [el.lon, el.lat]
+              : [el.center.lon, el.center.lat]
+        }
       }));
   }
 
@@ -200,9 +215,76 @@
 
   function filterLargePolygons(features, maxBBoxArea) {
     return features.filter((f) => {
-      if (!f.geometry || f.geometry.type !== "Polygon") return false;
-      return polygonBBoxArea(f.geometry.coordinates) <= maxBBoxArea;
+      if (!f.geometry) return false;
+      if (f.geometry.type === "Polygon") return polygonBBoxArea(f.geometry.coordinates) <= maxBBoxArea;
+      if (f.geometry.type === "MultiPolygon") {
+        return f.geometry.coordinates.some((poly) => polygonBBoxArea(poly) <= maxBBoxArea);
+      }
+      return false;
     });
+  }
+
+  function polygonCentroid(coords) {
+    const ring = coords && coords[0];
+    if (!ring || ring.length < 3) return null;
+    let twiceArea = 0;
+    let x = 0;
+    let y = 0;
+    for (let i = 0; i < ring.length - 1; i += 1) {
+      const p1 = ring[i];
+      const p2 = ring[i + 1];
+      const f = p1[0] * p2[1] - p2[0] * p1[1];
+      twiceArea += f;
+      x += (p1[0] + p2[0]) * f;
+      y += (p1[1] + p2[1]) * f;
+    }
+    if (!twiceArea) return null;
+    return [x / (3 * twiceArea), y / (3 * twiceArea)];
+  }
+
+  function polygonAreaEstimate(coords) {
+    const ring = coords && coords[0];
+    if (!ring || ring.length < 3) return 0;
+    let sum = 0;
+    for (let i = 0; i < ring.length - 1; i += 1) {
+      const p1 = ring[i];
+      const p2 = ring[i + 1];
+      sum += p1[0] * p2[1] - p2[0] * p1[1];
+    }
+    return Math.abs(sum / 2);
+  }
+
+  function buildGreenDensityPoints(greenFC) {
+    const features = [];
+    greenFC.features.forEach((f) => {
+      if (!f.geometry) return;
+      if (f.geometry.type === "Polygon") {
+        const c = polygonCentroid(f.geometry.coordinates);
+        if (!c) return;
+        features.push({
+          type: "Feature",
+          properties: {
+            weight: Math.min(1, Math.max(0.08, polygonAreaEstimate(f.geometry.coordinates) * 80))
+          },
+          geometry: { type: "Point", coordinates: c }
+        });
+        return;
+      }
+      if (f.geometry.type === "MultiPolygon") {
+        f.geometry.coordinates.forEach((poly) => {
+          const c = polygonCentroid(poly);
+          if (!c) return;
+          features.push({
+            type: "Feature",
+            properties: {
+              weight: Math.min(1, Math.max(0.08, polygonAreaEstimate(poly) * 80))
+            },
+            geometry: { type: "Point", coordinates: c }
+          });
+        });
+      }
+    });
+    return { type: "FeatureCollection", features };
   }
 
   function addBoundaryLayer(boundaryFC) {
@@ -251,57 +333,86 @@
           "match",
           ["get", "level"],
           "motorway",
-          3.8,
+          4.2,
           "trunk",
-          3.4,
+          3.8,
           "primary",
-          2.8,
+          3.2,
           "secondary",
-          2.2,
-          1.6
+          2.5,
+          "residential",
+          1.6,
+          "service",
+          1.2,
+          1.9
         ],
-        "line-opacity": 0.86
+        "line-opacity": 0.88
       }
     });
   }
 
   function addBusinessLayers(poiFC) {
     map.addSource("business-poi-source", { type: "geojson", data: poiFC });
-    map.addLayer({
-      id: "business-poi",
-      type: "circle",
-      source: "business-poi-source",
-      paint: {
-        "circle-color": [
-          "match",
-          ["get", "category"],
-          "retail",
-          "#0d9b73",
-          "service",
-          "#27b88d",
-          "office",
-          "#13805f",
-          cfg.colors.businessPoi
-        ],
-        "circle-radius": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          8,
-          2.5,
-          10,
-          4.2,
-          12,
-          6
-        ],
-        "circle-stroke-color": cfg.colors.businessPoiStroke,
-        "circle-stroke-width": 1,
-        "circle-opacity": 0.76
-      }
+    [
+      { id: "business-poi-retail", category: "retail", color: cfg.colors.businessPoiRetail },
+      { id: "business-poi-service", category: "service", color: cfg.colors.businessPoiService },
+      { id: "business-poi-office", category: "office", color: cfg.colors.businessPoiOffice },
+      { id: "business-poi-public", category: "public", color: cfg.colors.businessPoiPublic }
+    ].forEach((layer) => {
+      map.addLayer({
+        id: layer.id,
+        type: "circle",
+        source: "business-poi-source",
+        filter: ["==", ["get", "category"], layer.category],
+        paint: {
+          "circle-color": layer.color,
+          "circle-radius": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            8,
+            2.5,
+            10,
+            4.6,
+            12,
+            6.6
+          ],
+          "circle-stroke-color": cfg.colors.businessPoiStroke,
+          "circle-stroke-width": 1,
+          "circle-opacity": 0.82
+        }
+      });
     });
   }
 
   function addGreenLayers(greenFC) {
+    const greenDensityPoints = buildGreenDensityPoints(greenFC);
+    map.addSource("green-density-source", { type: "geojson", data: greenDensityPoints });
+    map.addLayer({
+      id: "green-density-heat",
+      type: "heatmap",
+      source: "green-density-source",
+      paint: {
+        "heatmap-weight": ["get", "weight"],
+        "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 8, 0.5, 12, 1.2],
+        "heatmap-color": [
+          "interpolate",
+          ["linear"],
+          ["heatmap-density"],
+          0,
+          "rgba(173, 232, 197, 0)",
+          0.3,
+          "rgba(139, 214, 177, 0.35)",
+          0.6,
+          "rgba(79, 190, 146, 0.55)",
+          1,
+          "rgba(42, 127, 95, 0.75)"
+        ],
+        "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 8, 18, 12, 34],
+        "heatmap-opacity": 0.66
+      }
+    });
+
     map.addSource("green-polygons-source", { type: "geojson", data: greenFC });
     map.addLayer({
       id: "green-polygons",
@@ -309,7 +420,7 @@
       source: "green-polygons-source",
       paint: {
         "fill-color": cfg.colors.greenFill,
-        "fill-opacity": 0.34
+        "fill-opacity": 0.28
       }
     });
     map.addLayer({
@@ -357,15 +468,15 @@
     const greenRaw = await fetchOverpass(cfg.queries.green);
 
     const boundaryFC = toFeatureCollection(overpassToBoundaryFeatures(boundaryRaw));
-    const roadsFC = toFeatureCollection(overpassToLineFeatures(roadsRaw).slice(0, 1600));
-    const poiFC = toFeatureCollection(overpassToPointFeatures(poiRaw).slice(0, 3500));
-    const greenFC = toFeatureCollection(overpassToPolygonFeatures(greenRaw).slice(0, 800));
+    const roadsFC = toFeatureCollection(overpassToLineFeatures(roadsRaw).slice(0, 12000));
+    const poiFC = toFeatureCollection(overpassToPointFeatures(poiRaw).slice(0, 18000));
+    const greenFC = toFeatureCollection(overpassToPolygonFeatures(greenRaw).slice(0, 4000));
 
     const safeRoads = roadsFC.features.length ? roadsFC : cfg.fallbackRoads;
     const safePoi = poiFC.features.length ? poiFC : cfg.fallbackPoi;
     const safeGreen = greenFC.features.length ? greenFC : cfg.fallbackGreen;
     const safeBoundary = boundaryFC.features.length ? boundaryFC : cfg.fallbackBoundary;
-    const compactGreenFeatures = filterLargePolygons(safeGreen.features, 0.08);
+    const compactGreenFeatures = filterLargePolygons(safeGreen.features, 0.8);
     const compactGreen =
       compactGreenFeatures.length > 0
         ? toFeatureCollection(compactGreenFeatures)

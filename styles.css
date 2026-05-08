@@ -325,8 +325,26 @@ ol {
   background: #1f8f68;
 }
 
-.legend-business {
-  background: #0b8f6e;
+.legend-business-retail {
+  background: #11a579;
+  border-radius: 999px;
+  border: 1px solid #ffffff;
+}
+
+.legend-business-service {
+  background: #2c90c6;
+  border-radius: 999px;
+  border: 1px solid #ffffff;
+}
+
+.legend-business-office {
+  background: #6d5bd0;
+  border-radius: 999px;
+  border: 1px solid #ffffff;
+}
+
+.legend-business-public {
+  background: #d0782a;
   border-radius: 999px;
   border: 1px solid #ffffff;
 }

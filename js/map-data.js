@@ -38,12 +38,15 @@ window.HohhotMapData = {
   ],
   layerIds: {
     traffic: ["traffic-lines"],
-    business: ["business-poi"],
-    green: ["green-polygons", "green-outline"]
+    business: ["business-poi-retail", "business-poi-service", "business-poi-office", "business-poi-public"],
+    green: ["green-density-heat", "green-polygons", "green-outline"]
   },
   colors: {
     trafficLine: "#1f8f68",
-    businessPoi: "#0b8f6e",
+    businessPoiRetail: "#11a579",
+    businessPoiService: "#2c90c6",
+    businessPoiOffice: "#6d5bd0",
+    businessPoiPublic: "#d0782a",
     businessPoiStroke: "#ffffff",
     greenFill: "#8bd6b1",
     greenOutline: "#2a7f5f",
@@ -92,6 +95,7 @@ window.HohhotMapData = {
       { type: "Feature", properties: { category: "retail" }, geometry: { type: "Point", coordinates: [111.67, 40.82] } },
       { type: "Feature", properties: { category: "service" }, geometry: { type: "Point", coordinates: [111.72, 40.84] } },
       { type: "Feature", properties: { category: "office" }, geometry: { type: "Point", coordinates: [111.78, 40.8] } },
+      { type: "Feature", properties: { category: "public" }, geometry: { type: "Point", coordinates: [111.74, 40.87] } },
       { type: "Feature", properties: { category: "service" }, geometry: { type: "Point", coordinates: [111.58, 40.86] } },
       { type: "Feature", properties: { category: "retail" }, geometry: { type: "Point", coordinates: [112.02, 40.74] } }
     ]
@@ -123,29 +127,42 @@ window.HohhotMapData = {
 relation["boundary"="administrative"]["name"="呼和浩特市"]["admin_level"~"5|6|7"];
 out geom;`,
     roads: `
-[out:json][timeout:90];
+[out:json][timeout:120];
 area["name"="呼和浩特市"]["boundary"="administrative"]->.a;
 (
-  way(area.a)["highway"~"motorway|trunk|primary|secondary|tertiary"];
+  way(area.a)["highway"~"motorway|trunk|primary|secondary|tertiary|residential|unclassified|service|living_street|road"];
 );
 out geom;`,
     poi: `
-[out:json][timeout:90];
+[out:json][timeout:120];
 area["name"="呼和浩特市"]["boundary"="administrative"]->.a;
 (
-  node(area.a)["amenity"~"restaurant|cafe|bank|hospital|school|university|marketplace"];
+  node(area.a)["amenity"~"restaurant|cafe|fast_food|marketplace|bank|hospital|clinic|pharmacy|school|university|college|library|bus_station|subway_entrance|government|post_office"];
   node(area.a)["shop"];
   node(area.a)["office"];
+  node(area.a)["tourism"];
+  node(area.a)["leisure"~"sports_centre|stadium|theatre|cinema"];
+  way(area.a)["amenity"~"restaurant|cafe|fast_food|marketplace|bank|hospital|clinic|pharmacy|school|university|college|library|bus_station|government|post_office"];
+  way(area.a)["shop"];
+  way(area.a)["office"];
+  way(area.a)["tourism"];
+  relation(area.a)["amenity"~"hospital|school|university|government"];
+  relation(area.a)["shop"];
+  relation(area.a)["office"];
 );
-out body;`,
+out center;`,
     green: `
-[out:json][timeout:90];
+[out:json][timeout:120];
 area["name"="呼和浩特市"]["boundary"="administrative"]->.a;
 (
   way(area.a)["leisure"="park"];
-  way(area.a)["landuse"="forest"];
+  way(area.a)["leisure"="garden"];
+  way(area.a)["landuse"~"forest|grass|village_green|recreation_ground"];
+  way(area.a)["natural"~"wood|grassland|scrub"];
   relation(area.a)["leisure"="park"];
-  relation(area.a)["landuse"="forest"];
+  relation(area.a)["leisure"="garden"];
+  relation(area.a)["landuse"~"forest|grass|village_green|recreation_ground"];
+  relation(area.a)["natural"~"wood|grassland|scrub"];
 );
 out geom;`
   }
