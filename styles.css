@@ -277,6 +277,21 @@ ol {
   border: 1px solid #e7edea;
 }
 
+.map-error {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #7a2e2e;
+  background: #fff4f4;
+  border: 1px dashed #ebb3b3;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  padding: 14px;
+}
+
 .map-legend-panel h2 {
   margin-bottom: 10px;
 }

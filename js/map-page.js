@@ -1,6 +1,20 @@
 (function () {
+  function showMapError(msg) {
+    const el = document.getElementById("cityMap");
+    if (!el) return;
+    el.innerHTML = `<div class="map-error">${msg}</div>`;
+  }
+
   const cfg = window.HohhotMapData;
-  if (!cfg || !window.maplibregl) return;
+  if (!cfg) {
+    showMapError("地图配置加载失败，请刷新后重试。");
+    return;
+  }
+
+  if (!window.maplibregl) {
+    showMapError("地图核心库加载失败，请检查网络后刷新页面。");
+    return;
+  }
 
   const map = new maplibregl.Map({
     container: "cityMap",
@@ -14,6 +28,9 @@
 
   map.addControl(new maplibregl.NavigationControl({ showCompass: true }), "top-right");
   map.fitBounds(cfg.bounds, { padding: 24, duration: 0 });
+  map.on("error", () => {
+    showMapError("地图底图资源加载异常，请稍后刷新重试。");
+  });
 
   function sanitizeLevel(level) {
     if (!level) return "tertiary";
