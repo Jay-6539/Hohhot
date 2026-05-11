@@ -656,6 +656,7 @@
       type: "fill",
       source: "business-grid-fine-source",
       minzoom: 11.8,
+      maxzoom: 13.2,
       paint: {
         "fill-color": businessFillColor,
         "fill-opacity": 0.68
@@ -666,6 +667,7 @@
       type: "line",
       source: "business-grid-fine-source",
       minzoom: 11.8,
+      maxzoom: 13.2,
       paint: {
         "line-color": "rgba(255,255,255,0.26)",
         "line-width": ["interpolate", ["linear"], ["zoom"], 12, 0.25, 16, 0.55],
