@@ -12,8 +12,8 @@ window.HohhotMapData = {
     // WGS84 坐标，渲染前会自动转换为 GCJ-02
     coordinates: [111.6618, 40.8196],
     offsetMeters: {
-      east: 0,
-      north: 130
+      east: 80,
+      north: 160
     }
   },
   mapStyle: {
