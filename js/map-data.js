@@ -13,7 +13,7 @@ window.HohhotMapData = {
     coordinates: [111.6618, 40.8196],
     offsetMeters: {
       east: 0,
-      north: 110
+      north: 130
     }
   },
   mapStyle: {
