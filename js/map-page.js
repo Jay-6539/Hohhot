@@ -865,8 +865,8 @@
         // eslint-disable-next-line no-console
         console.info(`Map cache hit: poi=${(cachedLayers.gcjPoi && cachedLayers.gcjPoi.features && cachedLayers.gcjPoi.features.length) || 0}`);
         addBoundaryLayer(cachedLayers.gcjBoundary);
-        addTrafficLayers(cachedLayers.gcjRoads);
         addBusinessLayers(cachedLayers.gcjPoi);
+        addTrafficLayers(cachedLayers.gcjRoads);
         addGreenLayers(cachedLayers.gcjGreen);
         addProjectSite(cfg.projectSite);
         applyLayerVisibilityByButtons();
@@ -927,8 +927,8 @@
       console.info("Map cache updated from network.");
 
       addBoundaryLayer(gcjBoundary);
-      addTrafficLayers(gcjRoads);
       addBusinessLayers(gcjPoi);
+      addTrafficLayers(gcjRoads);
       addGreenLayers(gcjGreen);
       addProjectSite(cfg.projectSite);
 
